@@ -20,6 +20,8 @@ export class EventService {
         date: data.date ?? null,
         guest_count: data.guest_count ?? null,
         location: data.location ?? null,
+        budget_amount: data.budget_amount ?? 0,
+        currency: data.currency ?? 'USD',
         metadata: data.metadata ?? {},
       })
       .select()

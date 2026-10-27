@@ -40,29 +40,29 @@ The type selector, schema, database check constraint, and core CRUD support `bir
 
 The type selector, schema, database check constraint, and core CRUD support `community`. Organization, permit, volunteer, sponsor, and logistics fields are missing. Acceptance: create a community event with those fields, reload it, and verify community-specific templates and persisted values.
 
-### 5. Budget generation and tracking — ❌
+### 5. Budget generation and tracking — ⚠️ Partial
 
 | Concern | Current or planned mapping |
 |---|---|
-| Feature/page | Planned `/events/:id/budget`; current Budget tab is a placeholder. |
+| Feature/page | `/events/:id/budget` now supports persisted budget item creation, listing, and deletion. AI-generated budgets remain planned. |
 | Backend/service | Planned nested budget CRUD and generation endpoints plus deterministic calculation service; none currently exist. |
 | Persistence | `budget_items` migration exists with estimated/actual costs, paid flag, notes, category, and ordering; no repository code uses it. |
 | Acceptance test | Generate a budget for a 150-person wedding, edit an estimate, mark an actual payment, verify deterministic totals and reload persistence. Unit tests must cover empty data, rounding, and invalid costs. |
 
-### 6. Timeline and deadlines — ❌
+### 6. Timeline and deadlines — ⚠️ Partial
 
 | Concern | Current or planned mapping |
 |---|---|
-| Feature/page | Planned `/events/:id/timeline`; current Timeline tab is a placeholder. |
+| Feature/page | `/events/:id/timeline` now supports persisted milestone creation, listing, and completion toggling. |
 | Backend/service | Planned timeline CRUD/generation endpoints and overdue calculation; none currently exist. |
 | Persistence | `timeline_items` migration supports due dates, status, and ordering; no code uses it. |
 | Acceptance test | Generate milestones for an event six months away, complete one, add one, verify overdue status against a fixed clock, and reload to verify persistence. |
 
-### 7. Vendor checklists and booking status — ❌
+### 7. Vendor checklists and booking status — ⚠️ Partial
 
 | Concern | Current or planned mapping |
 |---|---|
-| Feature/page | Planned `/events/:id/vendors`; current Vendors tab is a placeholder. |
+| Feature/page | `/events/:id/vendors` now supports persisted vendor creation, listing, and deletion; richer booking workflows remain planned. |
 | Backend/service | Planned vendor CRUD and suggestion endpoints; none currently exist. |
 | Persistence | `vendors` migration supports category, contact details, quoted/final costs, notes, and `not_started → contacted → quoted → booked → paid`; no code uses it. |
 | Acceptance test | Add a photographer, move it through the status workflow, verify invalid transitions/values are rejected as designed, and reload to verify persistence. |

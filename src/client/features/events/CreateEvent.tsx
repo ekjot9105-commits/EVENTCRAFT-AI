@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Button from '../../shared/components/Button';
 import Icon from '../../shared/components/Icon';
+import { eventsApi } from '../../shared/api/client';
+import { showToast } from '../../shared/components/Toast';
 import {
   eventWizardSchema,
   initialEventWizardData,
@@ -63,6 +65,7 @@ export default function CreateEvent() {
   const [data, setData] = useState<EventWizardData>(readDraft);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const cancelTriggerRef = useRef<HTMLButtonElement>(null);
   const cancelCloseRef = useRef<HTMLButtonElement>(null);
   const hadCancelDialogOpen = useRef(false);
@@ -110,7 +113,7 @@ export default function CreateEvent() {
     goToStep(step - 1);
   };
 
-  const handleReviewSubmit = (event: FormEvent) => {
+  const handleReviewSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const result = eventWizardSchema.safeParse(data);
     if (!result.success) {
@@ -118,8 +121,38 @@ export default function CreateEvent() {
       return;
     }
     setErrors({});
-    setIsCancelDialogOpen(false);
-    goToStep(MAX_STEP, true);
+    setIsSubmitting(true);
+    try {
+      const created = await eventsApi.create({
+        type: result.data.type,
+        title: result.data.name,
+        date: result.data.startTime
+          ? new Date(`${result.data.date}T${result.data.startTime}`).toISOString()
+          : new Date(`${result.data.date}T00:00:00`).toISOString(),
+        location: result.data.location || undefined,
+        guest_count: result.data.guestCount,
+        budget_amount: result.data.budgetAmount,
+        currency: result.data.currency,
+        metadata: {
+          priorities: result.data.priorities,
+          flexibility: result.data.flexibility,
+          style: result.data.style,
+          culturalPreferences: result.data.culturalPreferences,
+          dietaryRequirements: result.data.dietaryRequirements,
+          accessibilityRequirements: result.data.accessibilityRequirements,
+          notes: result.data.notes,
+        },
+      });
+      sessionStorage.removeItem(DRAFT_KEY);
+      showToast('Event plan created successfully', 'success');
+      navigate(`/events/${created.id}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to create the event plan';
+      setErrors({ submit: message });
+      showToast(message, 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const discardDraft = () => {
@@ -167,6 +200,7 @@ export default function CreateEvent() {
           {step === 3 && <BudgetStep data={data} errors={errors} update={update} />}
           {step === 4 && <PersonalizationStep data={data} errors={errors} update={update} />}
           {step === 5 && <ReviewStep data={data} onEdit={goToStep} />}
+          {errors.submit && <p className="form-error mt-5" role="alert">{errors.submit}</p>}
         </div>
 
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
@@ -180,8 +214,8 @@ export default function CreateEvent() {
               <Icon name="arrow-right" className="h-4 w-4" />
             </Button>
           ) : (
-            <Button type="submit">
-              Continue to Phase 2
+            <Button type="submit" loading={isSubmitting}>
+              Create event plan
               <Icon name="arrow-right" className="h-4 w-4" />
             </Button>
           )}

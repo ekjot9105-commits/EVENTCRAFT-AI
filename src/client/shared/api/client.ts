@@ -55,6 +55,9 @@ async function request<T>(
 // ===================== Event API =====================
 
 import type { Event, CreateEventPayload, UpdateEventPayload } from '../../../shared/types/event';
+import type { BudgetItem, CreateBudgetItemPayload, UpdateBudgetItemPayload } from '../../../shared/types/budget';
+import type { TimelineItem, CreateTimelineItemPayload, UpdateTimelineItemPayload } from '../../../shared/types/timeline';
+import type { Vendor, CreateVendorPayload, UpdateVendorPayload } from '../../../shared/types/vendor';
 
 export const eventsApi = {
   list: () => request<Event[]>('/events'),
@@ -75,4 +78,26 @@ export const eventsApi = {
 
   delete: (id: string) =>
     request<void>(`/events/${id}`, { method: 'DELETE' }),
+};
+
+/** Event-scoped planning APIs share the same request/error boundary as events. */
+export const planningApi = {
+  budget: {
+    list: (eventId: string) => request<BudgetItem[]>(`/events/${eventId}/budget`),
+    create: (eventId: string, data: CreateBudgetItemPayload) => request<BudgetItem>(`/events/${eventId}/budget`, { method: 'POST', body: JSON.stringify(data) }),
+    update: (eventId: string, itemId: string, data: UpdateBudgetItemPayload) => request<BudgetItem>(`/events/${eventId}/budget/${itemId}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (eventId: string, itemId: string) => request<void>(`/events/${eventId}/budget/${itemId}`, { method: 'DELETE' }),
+  },
+  timeline: {
+    list: (eventId: string) => request<TimelineItem[]>(`/events/${eventId}/timeline`),
+    create: (eventId: string, data: CreateTimelineItemPayload) => request<TimelineItem>(`/events/${eventId}/timeline`, { method: 'POST', body: JSON.stringify(data) }),
+    update: (eventId: string, itemId: string, data: UpdateTimelineItemPayload) => request<TimelineItem>(`/events/${eventId}/timeline/${itemId}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (eventId: string, itemId: string) => request<void>(`/events/${eventId}/timeline/${itemId}`, { method: 'DELETE' }),
+  },
+  vendors: {
+    list: (eventId: string) => request<Vendor[]>(`/events/${eventId}/vendors`),
+    create: (eventId: string, data: CreateVendorPayload) => request<Vendor>(`/events/${eventId}/vendors`, { method: 'POST', body: JSON.stringify(data) }),
+    update: (eventId: string, itemId: string, data: UpdateVendorPayload) => request<Vendor>(`/events/${eventId}/vendors/${itemId}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    remove: (eventId: string, itemId: string) => request<void>(`/events/${eventId}/vendors/${itemId}`, { method: 'DELETE' }),
+  },
 };

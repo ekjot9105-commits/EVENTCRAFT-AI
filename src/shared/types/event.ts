@@ -13,6 +13,8 @@ export interface Event {
   date: string | null;
   guest_count: number | null;
   location: string | null;
+  budget_amount: number;
+  currency: string;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -26,6 +28,8 @@ export interface CreateEventPayload {
   date?: string;
   guest_count?: number;
   location?: string;
+  budget_amount?: number;
+  currency?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -36,5 +40,7 @@ export interface UpdateEventPayload {
   date?: string;
   guest_count?: number;
   location?: string;
+  budget_amount?: number;
+  currency?: string;
   metadata?: Record<string, unknown>;
 }

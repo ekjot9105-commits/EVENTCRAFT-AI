@@ -12,6 +12,8 @@ export const createEventSchema = z.object({
   date: z.iso.datetime({ offset: true }).optional(),
   guest_count: z.number().int().min(1).max(100000).optional(),
   location: z.string().max(500).optional(),
+  budget_amount: z.number().finite().min(0).max(100_000_000).optional(),
+  currency: z.enum(['USD', 'CAD', 'GBP', 'EUR', 'AUD']).optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
@@ -21,6 +23,8 @@ export const updateEventSchema = z.object({
   date: z.iso.datetime({ offset: true }).optional().nullable(),
   guest_count: z.number().int().min(1).max(100000).optional().nullable(),
   location: z.string().max(500).optional().nullable(),
+  budget_amount: z.number().finite().min(0).max(100_000_000).optional(),
+  currency: z.enum(['USD', 'CAD', 'GBP', 'EUR', 'AUD']).optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 

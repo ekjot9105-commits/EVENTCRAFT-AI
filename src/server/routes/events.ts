@@ -7,6 +7,7 @@ import { eventService } from '../services/eventService.js';
 import { validateBody } from '../middleware/validate.js';
 import { notFound } from '../middleware/errorHandler.js';
 import { createEventSchema, updateEventSchema } from '../../shared/schemas/event.schema.js';
+import { parseResourceId } from '../utils/resourceId.js';
 
 const router = Router();
 
@@ -27,7 +28,7 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
  */
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = String(req.params['id']);
+    const id = parseResourceId(String(req.params['id']));
     const event = await eventService.getById(id);
     if (!event) {
       throw notFound('Event', id);
@@ -62,7 +63,7 @@ router.patch(
   validateBody(updateEventSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = String(req.params['id']);
+      const id = parseResourceId(String(req.params['id']));
       const event = await eventService.update(id, req.body);
       if (!event) {
         throw notFound('Event', id);
@@ -79,7 +80,7 @@ router.patch(
  */
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await eventService.delete(String(req.params['id']));
+    await eventService.delete(parseResourceId(String(req.params['id'])));
     res.status(204).send();
   } catch (err) {
     next(err);

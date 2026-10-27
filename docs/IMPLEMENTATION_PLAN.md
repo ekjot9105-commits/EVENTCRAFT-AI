@@ -26,6 +26,7 @@ This plan follows the existing React/Express/Supabase modular monolith. It does 
 
 **Work**
 - Add budget schemas, service, nested routes, API client, and budget UI.
+- Current status: persisted event creation, budget/timeline/vendor services and routes, shared validation, deterministic budget calculations, and initial workspace controls are implemented.
 - Add deterministic calculation helpers for estimated/actual/paid/category totals.
 - Add server-only Gemini adapter, bounded budget prompt, strict output parser, retry/timeout, and AI rate limit.
 - Persist generated items only after validation; make regeneration behavior explicit.

@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import eventRoutes from './routes/events.js';
+import planningRoutes from './routes/planning.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -30,6 +31,7 @@ app.use(express.json({ limit: '1mb' }));
 // API Routes
 // ===========================================
 app.use('/api/events', eventRoutes);
+app.use('/api', planningRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

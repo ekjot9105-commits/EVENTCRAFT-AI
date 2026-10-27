@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS events (
   date TIMESTAMPTZ,
   guest_count INTEGER,
   location TEXT,
+  budget_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (budget_amount >= 0),
+  currency TEXT NOT NULL DEFAULT 'USD' CHECK (currency IN ('USD', 'CAD', 'GBP', 'EUR', 'AUD')),
   metadata JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
