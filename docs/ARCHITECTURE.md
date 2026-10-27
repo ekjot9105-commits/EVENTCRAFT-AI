@@ -94,11 +94,11 @@ Use database constraints for enum-like statuses and non-negative monetary/date i
 
 ## 6. Security boundaries and known gaps
 
-Current protections include JSON body size limit, Helmet, Zod body validation, server-side environment loading, and no client-side Gemini call. Current gaps:
+Current protections include JSON body size limit, Helmet, Zod body validation, server-side environment loading, no client-side Gemini call, and a production deny-by-default guard unless `AUTH_ENABLED=true`. Current gaps:
 
 - `cors()` is unrestricted.
 - The service-role key is preferred when present, while no authentication or ownership checks exist.
-- The migration has no RLS or ownership column.
+- The migration has no RLS or ownership column; `AUTH_ENABLED` must remain false until those are added.
 - Event IDs are not validated as UUIDs at the route boundary.
 - `metadata: z.record(z.unknown())` is broad and needs feature-specific schemas before AI or persistence use.
 - Development disables Helmet CSP; production CSP policy is not explicitly reviewed.

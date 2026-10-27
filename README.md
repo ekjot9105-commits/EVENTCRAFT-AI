@@ -68,6 +68,8 @@ The current frontend includes a responsive application shell, a five-step event 
 
 Phase 2 persistence endpoints are available under `/api/events/:eventId/{budget,timeline,vendors}`. They validate request bodies with shared Zod schemas and use Supabase-backed services. The current deployment boundary is a single-user/demo environment: authentication, ownership, and row-level security are still required before public multi-user deployment.
 
+Production API access is intentionally disabled unless `AUTH_ENABLED=true`. Do not enable that flag until authenticated event ownership and Supabase row-level security are configured.
+
 ## Tech Stack
 
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS

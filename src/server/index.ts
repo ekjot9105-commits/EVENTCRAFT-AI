@@ -13,6 +13,7 @@ import planningRoutes from './routes/planning.js';
 import aiRoutes from './routes/ai.js';
 import ideaRoutes from './routes/ideas.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { deploymentGuard } from './middleware/deploymentGuard.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,6 +29,7 @@ app.use(helmet({
 }));
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
+app.use('/api', deploymentGuard);
 
 // ===========================================
 // API Routes
