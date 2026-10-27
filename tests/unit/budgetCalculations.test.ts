@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { calculateBudgetSummary } from '../../src/server/utils/budgetCalculations';
 
+// These tests protect the deterministic accounting rules used by planning views.
 describe('calculateBudgetSummary', () => {
   it('calculates totals in cents to avoid floating-point drift', () => {
     const summary = calculateBudgetSummary(100, [

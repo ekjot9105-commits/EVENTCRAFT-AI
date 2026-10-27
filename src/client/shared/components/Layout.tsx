@@ -8,6 +8,7 @@ interface NavigationItem {
   icon: IconName;
 }
 
+// Keep global navigation separate from event-specific workspaces.
 const primaryNavigation: NavigationItem[] = [
   { label: 'Dashboard', href: '/', icon: 'dashboard' },
 ];
@@ -56,7 +57,7 @@ export default function Layout() {
             </Link>
           </div>
           <div className="hidden items-center gap-3 sm:flex">
-            <span className="demo-pill">Phase 1 · Demo mode</span>
+            <span className="demo-pill">Phase 2 · Demo mode</span>
             <Link to="/events/new" className="header-action">
               <span aria-hidden="true">+</span> New event
             </Link>

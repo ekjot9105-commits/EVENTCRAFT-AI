@@ -2,6 +2,7 @@ import type { BudgetItem } from './budget.js';
 import type { TimelineItem } from './timeline.js';
 import type { Vendor } from './vendor.js';
 
+/** Derived figures displayed by the budget workspace and future dashboards. */
 export interface BudgetSummary {
   planned_budget: number;
   planned_spending: number;
@@ -14,6 +15,7 @@ export interface BudgetSummary {
   item_count: number;
 }
 
+/** Complete event-scoped planning payload used by aggregate views. */
 export interface PlanningData {
   budgetItems: BudgetItem[];
   timelineItems: TimelineItem[];

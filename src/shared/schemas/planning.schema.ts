@@ -1,8 +1,10 @@
 import { z } from 'zod';
 import { TIMELINE_STATUSES, VENDOR_STATUSES } from '../constants/statusEnums.js';
 
+// Shared monetary limits prevent invalid or unbounded values in every planning area.
 const money = z.number().finite().min(0).max(10_000_000);
 
+// Create schemas provide defaults; update schemas separately allow nullable fields.
 export const createBudgetItemSchema = z.object({
   category: z.string().trim().min(1).max(100),
   name: z.string().trim().min(1).max(200),

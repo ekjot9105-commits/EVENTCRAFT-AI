@@ -1,3 +1,4 @@
+// Central schema exports keep imports stable while individual files remain focused.
 export { createEventSchema, updateEventSchema } from './event.schema.js';
 export type { CreateEventInput, UpdateEventInput } from './event.schema.js';
 

@@ -14,6 +14,7 @@ import { parseResourceId } from '../utils/resourceId.js';
 
 const router = Router();
 
+// Parse route IDs at the boundary so services only receive valid UUIDs.
 function eventId(req: Request): string {
   return parseResourceId(String(req.params['eventId']));
 }
@@ -22,6 +23,7 @@ function itemId(req: Request): string {
   return parseResourceId(String(req.params['itemId']));
 }
 
+// Budget, timeline, and vendor routes intentionally share the same event scope.
 router.get('/events/:eventId/budget', async (req, res, next) => {
   try { res.json(await planningService.listBudgetItems(eventId(req))); } catch (error) { next(error); }
 });

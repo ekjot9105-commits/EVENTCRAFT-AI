@@ -6,7 +6,9 @@ import type { Vendor, CreateVendorPayload, UpdateVendorPayload } from '../../sha
 
 type TableName = 'budget_items' | 'timeline_items' | 'vendors';
 
+/** Provides typed persistence operations for event planning workspaces. */
 export class PlanningService {
+  // Shared list logic keeps ordering and event scoping consistent across tables.
   private async list<T>(table: TableName, eventId: string): Promise<T[]> {
     const { data, error } = await getSupabase().from(table).select('*').eq('event_id', eventId).order('created_at');
     if (error) throw new Error(`Failed to list ${table}: ${error.message}`);

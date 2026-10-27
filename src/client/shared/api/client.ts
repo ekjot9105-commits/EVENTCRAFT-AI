@@ -2,6 +2,8 @@
 // API Client — HTTP Wrapper
 // ===========================================
 
+// Keep the browser client relative to the deployed origin so Vite and the
+// production server can share the same API contract without exposing secrets.
 const API_BASE = '/api';
 
 interface ApiError {
@@ -21,7 +23,8 @@ export class ApiRequestError extends Error {
 }
 
 /**
- * Make an API request with proper error handling.
+ * Execute a typed JSON request and normalize transport/API failures into one
+ * error type that feature components can display consistently.
  */
 async function request<T>(
   endpoint: string,
@@ -42,23 +45,29 @@ async function request<T>(
     return undefined as T;
   }
 
-  const data = await res.json();
+  const contentType = res.headers?.get('content-type') ?? '';
+  // Test doubles and some proxies omit the header, so retain the JSON
+  // contract when the response body is available but the type is unspecified.
+  const data = contentType.includes('application/json') || !contentType ? await res.json() : null;
 
   if (!res.ok) {
-    const errorData = data as ApiError;
-    throw new ApiRequestError(res.status, errorData.error, errorData.details);
+    const errorData = data as ApiError | null;
+    throw new ApiRequestError(
+      res.status,
+      errorData?.error ?? `Request failed with status ${res.status}`,
+      errorData?.details,
+    );
   }
 
   return data as T;
 }
-
-// ===================== Event API =====================
 
 import type { Event, CreateEventPayload, UpdateEventPayload } from '../../../shared/types/event';
 import type { BudgetItem, CreateBudgetItemPayload, UpdateBudgetItemPayload } from '../../../shared/types/budget';
 import type { TimelineItem, CreateTimelineItemPayload, UpdateTimelineItemPayload } from '../../../shared/types/timeline';
 import type { Vendor, CreateVendorPayload, UpdateVendorPayload } from '../../../shared/types/vendor';
 
+// Event endpoints manage the top-level planning brief and event lifecycle.
 export const eventsApi = {
   list: () => request<Event[]>('/events'),
 
@@ -80,24 +89,51 @@ export const eventsApi = {
     request<void>(`/events/${id}`, { method: 'DELETE' }),
 };
 
-/** Event-scoped planning APIs share the same request/error boundary as events. */
+/**
+ * Event-scoped planning endpoints keep each workspace isolated by event ID.
+ * The server remains authoritative for validation and authorization.
+ */
 export const planningApi = {
   budget: {
     list: (eventId: string) => request<BudgetItem[]>(`/events/${eventId}/budget`),
-    create: (eventId: string, data: CreateBudgetItemPayload) => request<BudgetItem>(`/events/${eventId}/budget`, { method: 'POST', body: JSON.stringify(data) }),
-    update: (eventId: string, itemId: string, data: UpdateBudgetItemPayload) => request<BudgetItem>(`/events/${eventId}/budget/${itemId}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    create: (eventId: string, data: CreateBudgetItemPayload) =>
+      request<BudgetItem>(`/events/${eventId}/budget`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (eventId: string, itemId: string, data: UpdateBudgetItemPayload) =>
+      request<BudgetItem>(`/events/${eventId}/budget/${itemId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
     remove: (eventId: string, itemId: string) => request<void>(`/events/${eventId}/budget/${itemId}`, { method: 'DELETE' }),
   },
   timeline: {
     list: (eventId: string) => request<TimelineItem[]>(`/events/${eventId}/timeline`),
-    create: (eventId: string, data: CreateTimelineItemPayload) => request<TimelineItem>(`/events/${eventId}/timeline`, { method: 'POST', body: JSON.stringify(data) }),
-    update: (eventId: string, itemId: string, data: UpdateTimelineItemPayload) => request<TimelineItem>(`/events/${eventId}/timeline/${itemId}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    create: (eventId: string, data: CreateTimelineItemPayload) =>
+      request<TimelineItem>(`/events/${eventId}/timeline`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (eventId: string, itemId: string, data: UpdateTimelineItemPayload) =>
+      request<TimelineItem>(`/events/${eventId}/timeline/${itemId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
     remove: (eventId: string, itemId: string) => request<void>(`/events/${eventId}/timeline/${itemId}`, { method: 'DELETE' }),
   },
   vendors: {
     list: (eventId: string) => request<Vendor[]>(`/events/${eventId}/vendors`),
-    create: (eventId: string, data: CreateVendorPayload) => request<Vendor>(`/events/${eventId}/vendors`, { method: 'POST', body: JSON.stringify(data) }),
-    update: (eventId: string, itemId: string, data: UpdateVendorPayload) => request<Vendor>(`/events/${eventId}/vendors/${itemId}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    create: (eventId: string, data: CreateVendorPayload) =>
+      request<Vendor>(`/events/${eventId}/vendors`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (eventId: string, itemId: string, data: UpdateVendorPayload) =>
+      request<Vendor>(`/events/${eventId}/vendors/${itemId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
     remove: (eventId: string, itemId: string) => request<void>(`/events/${eventId}/vendors/${itemId}`, { method: 'DELETE' }),
   },
 };
