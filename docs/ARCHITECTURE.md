@@ -153,3 +153,11 @@ Do not claim coverage percentages until a coverage command is run and its artifa
 Development uses Vite on port 5173 and Express on port 3001, with `/api` proxied by Vite. Production compiles the client to `dist/client` and server to `dist/server`; Express serves the client when `NODE_ENV=production`. Deployment should inject environment variables through the platform, use HTTPS, restrict CORS to the deployed origin, and apply database RLS before shared use.
 
 The README currently documents the intended Supabase setup, but setup reproducibility is not verified without real non-secret environment values and a reachable database.
+## Local database fallback
+
+The persistence services retain Supabase as the hosted provider and support a
+SQLite adapter for local evaluation. `DATABASE_PROVIDER=sqlite` stores the same
+event, budget, timeline, vendor, and idea records in the file configured by
+`SQLITE_PATH`. When no Supabase credentials are present, SQLite is selected
+automatically. This keeps the demo truthful: records are persisted locally
+instead of being replaced with mock responses.

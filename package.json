@@ -28,6 +28,9 @@
   ],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=24"
+  },
   "dependencies": {
     "@google/genai": "^2.31.0",
     "@supabase/supabase-js": "^2.118.0",

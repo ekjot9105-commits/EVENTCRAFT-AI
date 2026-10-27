@@ -9,7 +9,8 @@ EventCraft AI has a real event-scoped planning flow for wedding, birthday, and c
 The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATEMENT_ALIGNMENT.md](./PROBLEM_STATEMENT_ALIGNMENT.md). In summary:
 
 - **Fully verified structurally:** event-type selection, deterministic budget calculations, shared validation schemas, typed routes, server-only AI boundary, proposal validation, and production route wiring.
-- **Partially verified:** live persistence, live Gemini generation, and refresh-based workflows. These require external Supabase and Gemini credentials that were not available during this review.
+- **Verified locally:** SQLite-backed event and budget persistence works without external credentials.
+- **Partially verified:** hosted Supabase persistence, live Gemini generation, and full browser refresh workflows. Hosted persistence and live AI require external credentials.
 - **Known partial product areas:** dedicated event-type templates, overdue timeline filtering, quote comparison, standalone idea regeneration, and timeline/vendor Copilot mutations.
 
 ## 2. Code quality
@@ -73,7 +74,7 @@ This is not a security certification or penetration test.
 | Command | Result |
 |---|---|
 | `npm run type-check` | Passed |
-| `npm test` | 10 files, 55 tests passed |
+| `npm test` | 10 files, 56 tests passed |
 | `npm run lint` | Passed; 3 warnings |
 | `npm run build` | Passed; client and server artifacts emitted |
 | `npm run test:coverage` | Passed: 16.95% statements, 18.16% branches, 16.88% functions, 20.31% lines |
@@ -82,8 +83,9 @@ This is not a security certification or penetration test.
 | Production guard request with `NODE_ENV=production`, `AUTH_ENABLED=false` | Returned HTTP 503 |
 | Production health request with `AUTH_ENABLED=true` | Returned HTTP 200 |
 | Production nested SPA route | Returned HTTP 200 and served the client application |
+| SQLite API smoke test | Created an event and budget item, then listed the persisted event successfully |
 
-The browser smoke check opened the app, reached `/events/new`, and confirmed accessible Wedding, Birthday, and Community Event choices. The dashboard displayed an explicit Supabase load error because external credentials were unavailable.
+The browser smoke check opened the app, reached `/events/new`, and confirmed accessible Wedding, Birthday, and Community Event choices. The SQLite API smoke test provided credential-free persistence evidence; hosted Supabase behavior remains external.
 
 ### Not executed
 
@@ -124,7 +126,7 @@ The browser smoke check opened the app, reached `/events/new`, and confirmed acc
 - Production server starts successfully.
 - Direct nested production routes serve the SPA.
 - Production API is deny-by-default without authentication.
-- 55 deterministic tests pass.
+- 56 deterministic tests pass.
 - All three event types are present in the wizard.
 - Core AI, planning, persistence, and proposal-confirmation boundaries are implemented and documented.
 

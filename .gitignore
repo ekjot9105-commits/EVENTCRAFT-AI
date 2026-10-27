@@ -39,3 +39,6 @@ playwright-report/
 # Misc
 *.tsbuildinfo
 .agents/
+
+# Local SQLite demo database
+data/

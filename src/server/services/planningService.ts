@@ -1,4 +1,6 @@
 import { getSupabase } from '../db/client.js';
+import { usesSqlite } from '../db/client.js';
+import { sqliteInsert, sqliteList, sqliteRemove, sqliteUpdate } from '../db/sqlite.js';
 import { calculateBudgetSummary } from '../utils/budgetCalculations.js';
 import type { BudgetItem, CreateBudgetItemPayload, UpdateBudgetItemPayload } from '../../shared/types/budget.js';
 import type { TimelineItem, CreateTimelineItemPayload, UpdateTimelineItemPayload } from '../../shared/types/timeline.js';
@@ -10,6 +12,7 @@ type TableName = 'budget_items' | 'timeline_items' | 'vendors';
 export class PlanningService {
   // Shared list logic keeps ordering and event scoping consistent across tables.
   private async list<T>(table: TableName, eventId: string): Promise<T[]> {
+    if (usesSqlite()) return sqliteList<T>(table, eventId);
     const { data, error } = await getSupabase().from(table).select('*').eq('event_id', eventId).order('created_at');
     if (error) throw new Error(`Failed to list ${table}: ${error.message}`);
     return (data ?? []) as T[];
@@ -54,18 +57,24 @@ export class PlanningService {
   }
 
   private async insert<T>(table: TableName, payload: Record<string, unknown>): Promise<T> {
+    if (usesSqlite()) {
+      const { event_id, ...data } = payload;
+      return sqliteInsert<T>(table, String(event_id), data);
+    }
     const { data, error } = await getSupabase().from(table).insert(payload).select().single();
     if (error) throw new Error(`Failed to create ${table}: ${error.message}`);
     return data as T;
   }
 
   private async update<T>(table: TableName, eventId: string, id: string, payload: object): Promise<T | null> {
+    if (usesSqlite()) return sqliteUpdate<T>(table, eventId, id, payload as Record<string, unknown>);
     const { data, error } = await getSupabase().from(table).update(payload).eq('event_id', eventId).eq('id', id).select().maybeSingle();
     if (error) throw new Error(`Failed to update ${table}: ${error.message}`);
     return data as T | null;
   }
 
   private async remove(table: TableName, eventId: string, id: string): Promise<boolean> {
+    if (usesSqlite()) return sqliteRemove(table, eventId, id);
     const { error } = await getSupabase().from(table).delete().eq('event_id', eventId).eq('id', id);
     if (error) throw new Error(`Failed to delete ${table}: ${error.message}`);
     return true;

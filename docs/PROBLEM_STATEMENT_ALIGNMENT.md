@@ -14,7 +14,7 @@
 | Timeline and deadlines | Timeline workspace supports create/edit, complete/reopen, delete, and date validation. | `/api/events/:eventId/timeline`; `planningService`; `timeline_items`. | Shared schema tests, type-check, build, and route inspection passed. | Overdue filtering and richer sorting remain limited. |
 | Vendor checklist and booking status | Vendor workspace supports create/edit/delete and constrained booking/payment status values. | `/api/events/:eventId/vendors`; `planningService`; `vendors`. | Shared schema tests, type-check, build, and route inspection passed. | Quote comparison and payment totals are not fully integrated into budget summaries. |
 | Personalized ideas | Ideas workspace displays generated ideas and supports save/dismiss actions. | `/api/events/:eventId/ideas`; `ideaService`; `ideas`; AI generated-plan persistence. | Ideas route/client wiring, build, and route inspection passed. | Standalone regeneration UI is limited; live AI output was not run. |
-| Editable, persistent plans | Event-scoped Budget, Timeline, Vendors, and Ideas pages reload after mutations. | Typed API client and Supabase-backed services with event-scoped queries. | Persistence contracts and UI mutation paths were audited; live refresh persistence was not executable without Supabase credentials. | No authentication, ownership, or RLS for multi-user deployment. |
+| Editable, persistent plans | Event-scoped Budget, Timeline, Vendors, and Ideas pages reload after mutations. | Typed API client with Supabase or local SQLite-backed services; SQLite uses `SQLITE_PATH` and event-scoped queries. | SQLite API smoke test created an event and budget item, then listed the persisted event successfully; hosted refresh persistence remains external. | No authentication, ownership, or RLS for multi-user deployment. |
 | Context-aware AI copilot | Assistant sends questions using the selected event and displays answers or proposals. | AI service assembles event, budget, timeline, vendor, and idea context before calling Gemini. | AI schema/provider tests and route inspection passed; live context response was not run without Gemini/Supabase credentials. | Authentication/ownership is required before private multi-user deployment. |
 | Safe approval of AI changes | Proposal preview provides Confirm and Cancel; confirmation is explicit. | Server-issued expiring proposal IDs, event binding, single-use consumption, schema validation, and stale-value comparison in `ai.ts`. | `proposalStore.test.ts` passed; invalid/stale/cross-event behavior is guarded in the confirmation route. | Supported confirmation actions currently cover budget updates/additions, not timeline/vendor mutations. |
 
@@ -24,14 +24,14 @@ The deterministic quality gate passed after the final production fixes:
 
 ```text
 npm run type-check   passed
-npm test             10 files / 55 tests passed
+npm test             10 files / 56 tests passed
 npm run lint         passed with 3 warnings
 npm run build        passed (client and compiled server)
 npm run test:coverage passed
 git diff --check     passed
 ```
 
-The browser smoke check reached the five-step event wizard and confirmed all three event-type choices. The dashboard could not load saved events because this environment has no Supabase credentials; the UI displayed an explicit error instead of fabricated data.
+The browser smoke check reached the five-step event wizard and confirmed all three event-type choices. A SQLite API smoke test verified real local event and budget persistence without Supabase credentials.
 
 ## Deployment boundary
 

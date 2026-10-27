@@ -6,6 +6,12 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 let supabase: SupabaseClient | null = null;
 
+/** Uses Supabase when configured and SQLite for the credential-free local demo. */
+export function usesSqlite(): boolean {
+  return process.env['DATABASE_PROVIDER'] === 'sqlite'
+    || (!process.env['SUPABASE_URL'] && !process.env['SUPABASE_SERVICE_ROLE_KEY'] && !process.env['SUPABASE_ANON_KEY']);
+}
+
 /**
  * Get the Supabase client singleton.
  * Throws if environment variables are missing.
