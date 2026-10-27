@@ -10,7 +10,7 @@ The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATE
 
 - **Fully verified structurally:** event-type selection, deterministic budget calculations, shared validation schemas, typed routes, server-only AI boundary, proposal validation, and production route wiring.
 - **Verified locally:** SQLite-backed event and budget persistence works without external credentials.
-- **Partially verified:** hosted Supabase persistence, live Gemini generation, and full browser refresh workflows. Hosted persistence and live AI require external credentials.
+- **Partially verified:** hosted Supabase persistence, live Gemini generation, and full browser refresh workflows. Hosted persistence and Gemini require external credentials; keyless local AI is available through Ollama, LM Studio, or the deterministic local provider.
 - **Known partial product areas:** dedicated event-type templates, overdue timeline filtering, quote comparison, standalone idea regeneration, and timeline/vendor Copilot mutations.
 
 ## 2. Code quality
@@ -38,7 +38,7 @@ Remaining maintainability concerns are documented rather than hidden: some featu
 
 ### Verified safeguards
 
-- Gemini credentials are read only by the server provider.
+- AI credentials, when used, are read only by the server provider; Ollama and LM Studio requests remain on localhost.
 - `.env.example` contains placeholders and `.gitignore` excludes local environment files.
 - Express uses Helmet, a 1 MB JSON body limit, UUID validation, Zod request validation, and sanitized error responses.
 - AI routes use an in-memory rate limiter.
@@ -90,7 +90,7 @@ The browser smoke check opened the app, reached `/events/new`, and confirmed acc
 ### Not executed
 
 - Live Supabase persistence tests.
-- Live Gemini generation or timeout tests.
+- Live Gemini generation or timeout tests; local-model integration requires an installed Ollama or LM Studio service.
 - Playwright end-to-end suite; no Playwright project is configured.
 - Automated axe accessibility scan; no axe integration is configured.
 - Authenticated multi-user or RLS tests.
@@ -133,7 +133,7 @@ The browser smoke check opened the app, reached `/events/new`, and confirmed acc
 ### Partially implemented or externally unverified
 
 - Supabase-backed create/edit/refresh persistence.
-- Live Gemini plan generation and context-aware responses.
+- Live hosted-model plan generation and context-aware responses.
 - Full browser journey across all planning workspaces.
 - Automated accessibility and Playwright coverage.
 - Rich event-specific templates, quote comparison, standalone idea regeneration, and non-budget Copilot mutations.
@@ -148,7 +148,9 @@ Copy `.env.example` to `.env` and configure:
 
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY` or `SUPABASE_SERVICE_ROLE_KEY`
-- `GEMINI_API_KEY`
+- `AI_PROVIDER` (`local`, `ollama`, `lmstudio`, or `gemini`)
+- `LOCAL_AI_BASE_URL` and `LOCAL_AI_MODEL` when using a local model
+- `GEMINI_API_KEY` only when using Gemini
 - Optional `GEMINI_MODEL`
 - Optional `GEMINI_MAX_OUTPUT_TOKENS`
 - `PORT`
@@ -160,7 +162,7 @@ Copy `.env.example` to `.env` and configure:
 ```text
 npm install
 copy .env.example .env
-# Fill in Supabase and Gemini values
+# Fill in Supabase values only for hosted persistence; choose a local AI provider or add Gemini credentials
 # Run the SQL migrations in src/server/db/migrations/
 npm run verify
 npm run build

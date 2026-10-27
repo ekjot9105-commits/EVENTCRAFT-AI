@@ -8,7 +8,8 @@
 - **npm** 10+
 - **SQLite demo mode** requires no database account.
 - **Supabase** account (optional for hosted persistence) — [supabase.com](https://supabase.com)
-- **Google Gemini API key** — [Google AI Studio](https://aistudio.google.com/apikey) (required for live plan generation and copilot)
+- **Google Gemini API key** — [Google AI Studio](https://aistudio.google.com/apikey) (optional)
+- **Optional free local AI** — [Ollama](https://ollama.com/) or [LM Studio](https://lmstudio.ai/) with a downloaded model
 
 ## Setup
 
@@ -18,7 +19,10 @@ npm install
 
 # 2. Create environment variables (SQLite works immediately)
 cp .env.example .env
-# Add a Gemini key for live AI; use DATABASE_PROVIDER=supabase for hosted persistence
+# AI works without credentials in local starter mode. For a free local model:
+#   ollama pull llama3.2:3b
+#   set AI_PROVIDER=ollama
+# Add a Gemini key only when live Gemini is desired.
 
 # 3. Set up the database
 # SQLite mode creates data/eventcraft.sqlite automatically.
@@ -71,7 +75,7 @@ src/
 └── shared/          # Types, Zod schemas, and constants
 ```
 
-The current frontend includes an animated product landing page, a responsive planning workspace, a five-step event planning brief, editable event-scoped workspaces, an ideas studio, and an AI Copilot route. Gemini generation is server-only and optional until credentials are configured; generated plans are schema-validated before persistence.
+The current frontend includes an animated product landing page, a responsive planning workspace, a five-step event planning brief, editable event-scoped workspaces, an ideas studio, and an AI Copilot route. AI generation is server-only and supports Gemini, free local Ollama/LM Studio models, and a deterministic starter mode. Every generated plan is schema-validated before persistence.
 
 Persistence endpoints are available under `/api/events/:eventId/{budget,timeline,vendors,ideas}`. They validate request bodies with shared Zod schemas and use the configured Supabase or SQLite persistence adapter. The current deployment boundary is a single-user/demo environment: authentication, ownership, and row-level security are still required before public multi-user deployment.
 
@@ -85,6 +89,15 @@ The server automatically uses the configured provider:
 - `DATABASE_PROVIDER=supabase` uses the Supabase variables and migrations.
 - If no Supabase variables exist, SQLite is selected automatically so the evaluator can exercise real create/edit/refresh workflows without fabricated data.
 
+### AI provider modes
+
+- `AI_PROVIDER=local` uses the built-in deterministic provider and needs no key or model download.
+- `AI_PROVIDER=ollama` uses a local Ollama model. Run `ollama pull llama3.2:3b` first.
+- `AI_PROVIDER=lmstudio` uses the LM Studio OpenAI-compatible local server. Set `LOCAL_AI_BASE_URL` and `LOCAL_AI_MODEL` to match the loaded model.
+- `AI_PROVIDER=gemini` uses Gemini through the server-only SDK and requires `GEMINI_API_KEY`.
+
+The local model modes are genuinely keyless, keep event data local, and fall back only when explicitly configured as `local`; they do not pretend that a deterministic response is a live model response.
+
 SQLite uses Node 24's built-in `node:sqlite` module. Use Node 24+ for the local demo.
 
 ## Tech Stack
@@ -92,7 +105,7 @@ SQLite uses Node 24's built-in `node:sqlite` module. Use Node 24+ for the local 
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS
 - **Backend**: Node.js, Express, TypeScript
 - **Database**: PostgreSQL via Supabase
-- **AI**: Google Gemini API through the official `@google/genai` server SDK
+- **AI**: Google Gemini, Ollama, LM Studio, or the built-in local provider
 - **Validation**: Zod (shared client/server schemas)
 - **Testing**: Vitest, React Testing Library
 

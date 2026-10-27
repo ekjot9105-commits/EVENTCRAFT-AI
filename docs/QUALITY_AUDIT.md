@@ -21,7 +21,7 @@ The audit reviewed the Phase 1–4 React/Express/Supabase modular monolith, shar
 - **Code quality:** Strict TypeScript, shared Zod schemas, typed API client, separate AI provider/prompts/service, deterministic budget calculations, and event-scoped services are present. Some feature components remain dense and should be split before a final release.
 - **Security:** Secrets remain server-side, bodies are bounded, UUIDs and schemas are validated, AI output is parsed, and proposals are now server-issued. Missing authentication/ownership/RLS is the primary unresolved risk.
 - **Efficiency:** AI calls are explicit, bounded, and rate-limited; budget arithmetic is local and deterministic. No private response cache exists. List endpoints still need pagination for public-scale deployment.
-- **Testing:** 55 deterministic tests pass; coverage tooling is now installable. Live Supabase/Gemini and browser E2E tests remain optional/not available without credentials and browser tooling.
+- **Testing:** 57 deterministic tests pass; coverage tooling is now installable. Live Supabase/hosted-model and browser E2E tests remain optional; keyless local-model verification requires Ollama or LM Studio to be installed.
 - **Accessibility:** Semantic landmarks, labels, focus styles, live AI status, button names, and retry/error text are present. Automated axe and full keyboard E2E evidence remain absent.
 
 ## Dependency audit

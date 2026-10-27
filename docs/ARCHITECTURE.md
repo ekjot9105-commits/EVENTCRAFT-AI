@@ -50,7 +50,7 @@ The documentation describes future feature directories that do not yet exist. Ne
 | Services | Business rules, ownership checks, deterministic calculations, orchestration |
 | Validation | Zod schemas at every external request and AI response boundary |
 | Database client/repositories | Supabase access and query-specific persistence |
-| AI module | Server-only Gemini calls, bounded prompts, output parsing, rate limits, and expiring server-side proposal records |
+| AI module | Server-only Gemini or keyless local-model calls, bounded prompts, output parsing, rate limits, and expiring server-side proposal records |
 
 Routes must remain thin. Services must not receive Express `req`/`res`. Shared types should describe persisted and API shapes without making unvalidated client input trusted.
 
@@ -76,7 +76,7 @@ User request
   -> event-scoped route (authentication/ownership remains a deployment prerequisite)
   -> load event context through services
   -> redact/minimize prompt context
-  -> server-only Gemini client
+  -> server-only AI provider (Gemini, Ollama, LM Studio, or deterministic local mode)
   -> strict Zod parse of model output
   -> persist generated result/message
   -> return proposed data/actions
@@ -94,7 +94,7 @@ Use database constraints for enum-like statuses and non-negative monetary/date i
 
 ## 6. Security boundaries and known gaps
 
-Current protections include JSON body size limit, Helmet, Zod body validation, server-side environment loading, no client-side Gemini call, and a production deny-by-default guard unless `AUTH_ENABLED=true`. Current gaps:
+Current protections include JSON body size limit, Helmet, Zod body validation, server-side environment loading, no client-side AI call, and a production deny-by-default guard unless `AUTH_ENABLED=true`. Current gaps:
 
 - `cors()` is unrestricted.
 - The service-role key is preferred when present, while no authentication or ownership checks exist.

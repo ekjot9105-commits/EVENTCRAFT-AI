@@ -17,7 +17,7 @@
 - **Client regression tests:** Application shell, routes, wizard validation, and preserved wizard values.
 - **AI provider tests:** Provider injection allows tests to run without credentials.
 - **SQLite persistence smoke test:** With `DATABASE_PROVIDER=sqlite`, the API can be exercised locally without Supabase; the adapter creates its schema and persists events and planning records in `SQLITE_PATH`.
-- **Integration limitations:** Supabase persistence and live Gemini requests are not required for the normal suite and are not executed without configured external services.
+- **Integration limitations:** Supabase persistence and hosted Gemini requests are not required for the normal suite. Keyless local AI can be verified with Ollama or LM Studio when a local model service is installed.
 
 ## Mocking policy
 

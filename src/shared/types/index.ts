@@ -4,4 +4,3 @@ export type { BudgetItem, CreateBudgetItemPayload, UpdateBudgetItemPayload, Budg
 export type { TimelineItem, CreateTimelineItemPayload, UpdateTimelineItemPayload } from './timeline.js';
 export type { Vendor, CreateVendorPayload, UpdateVendorPayload } from './vendor.js';
 export type { Idea, CreateIdeaPayload, UpdateIdeaPayload } from './idea.js';
-export type { AssistantMessage, SuggestedAction, SendMessagePayload, AssistantResponse } from './assistant.js';

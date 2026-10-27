@@ -5,6 +5,8 @@ import type { Event } from '../../shared/types/event.js';
 export class AiConfigurationError extends Error {}
 export class AiProviderError extends Error {}
 
+type LocalModelKind = 'ollama' | 'lmstudio';
+
 export interface AiProvider {
   generatePlan(prompt: string): Promise<GeneratedPlan>;
   answerCopilot(prompt: string): Promise<CopilotResponse>;
@@ -22,6 +24,7 @@ export class GeminiProvider implements AiProvider {
     if (!apiKey || apiKey === 'your-gemini-api-key') {
       throw new AiConfigurationError('Gemini is not configured. Set GEMINI_API_KEY on the server.');
     }
+
     this.client = new GoogleGenAI({ apiKey });
     this.model = model;
   }
@@ -55,6 +58,86 @@ export class GeminiProvider implements AiProvider {
       throw new AiProviderError('Gemini could not complete the request.');
     }
   }
+}
+
+/**
+ * Adapter for free local models. Ollama and LM Studio expose localhost APIs,
+ * so no API key or event data leaves the user's machine.
+ */
+export class LocalModelProvider implements AiProvider {
+    private readonly kind: LocalModelKind;
+    private readonly baseUrl: string;
+    private readonly model: string;
+    private readonly timeoutMs: number;
+
+    constructor(
+      kind: LocalModelKind = process.env['AI_PROVIDER'] === 'lmstudio' ? 'lmstudio' : 'ollama',
+      baseUrl = process.env['LOCAL_AI_BASE_URL'] ?? (kind === 'lmstudio' ? 'http://127.0.0.1:1234' : 'http://127.0.0.1:11434'),
+      model = process.env['LOCAL_AI_MODEL'] ?? (kind === 'lmstudio' ? 'local-model' : 'llama3.2:3b'),
+      timeoutMs = Number(process.env['LOCAL_AI_TIMEOUT_MS'] ?? 45_000),
+    ) {
+      this.kind = kind;
+      this.baseUrl = baseUrl.replace(/\/$/, '');
+      this.model = model;
+      this.timeoutMs = timeoutMs;
+    }
+
+    generatePlan(prompt: string): Promise<GeneratedPlan> {
+      return this.request(prompt) as Promise<GeneratedPlan>;
+    }
+
+    answerCopilot(prompt: string): Promise<CopilotResponse> {
+      return this.request(prompt) as Promise<CopilotResponse>;
+    }
+
+    private async request(prompt: string): Promise<GeneratedPlan | CopilotResponse> {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+      try {
+        const response = await fetch(this.endpoint(), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.body(prompt)),
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new AiProviderError(`Local ${this.kind} model returned HTTP ${response.status}.`);
+        const payload: unknown = await response.json();
+        const content = this.content(payload);
+        if (!content) throw new AiProviderError(`Local ${this.kind} model returned no content.`);
+        return JSON.parse(content) as GeneratedPlan | CopilotResponse;
+      } catch (error) {
+        if (error instanceof AiProviderError) throw error;
+        throw new AiProviderError(`Local ${this.kind} model is unavailable. Start it locally or use the built-in starter mode.`);
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    private endpoint(): string {
+      return this.kind === 'ollama' ? `${this.baseUrl}/api/chat` : `${this.baseUrl}/v1/chat/completions`;
+    }
+
+    private body(prompt: string): Record<string, unknown> {
+      if (this.kind === 'ollama') {
+        return { model: this.model, messages: [{ role: 'user', content: prompt }], stream: false, format: 'json', options: { temperature: 0.2 } };
+      }
+      return { model: this.model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' }, temperature: 0.2, stream: false };
+    }
+
+    private content(payload: unknown): string | null {
+      if (!payload || typeof payload !== 'object') return null;
+      const record = payload as Record<string, unknown>;
+      if (this.kind === 'ollama') {
+        const message = record['message'];
+        const content = message && typeof message === 'object' ? (message as Record<string, unknown>)['content'] : null;
+        return typeof content === 'string' ? content : null;
+      }
+      const choices = record['choices'];
+      const first = Array.isArray(choices) ? choices[0] : null;
+      const message = first && typeof first === 'object' ? (first as Record<string, unknown>)['message'] : null;
+      const content = message && typeof message === 'object' ? (message as Record<string, unknown>)['content'] : null;
+      return typeof content === 'string' ? content : null;
+    }
 }
 
 /**
@@ -121,9 +204,13 @@ let provider: AiProvider | null = null;
 /** Lazily create the provider so normal non-AI routes work without credentials. */
 export function getAiProvider(): AiProvider {
   if (provider) return provider;
-  provider = process.env['AI_PROVIDER'] === 'gemini' || process.env['GEMINI_API_KEY']
+  const configuredProvider = process.env['AI_PROVIDER'];
+  const geminiConfigured = Boolean(process.env['GEMINI_API_KEY']) && process.env['GEMINI_API_KEY'] !== 'your-gemini-api-key';
+  provider = configuredProvider === 'gemini' || (!configuredProvider && geminiConfigured)
     ? new GeminiProvider()
-    : new LocalPlanningProvider();
+    : configuredProvider === 'ollama' || configuredProvider === 'lmstudio'
+      ? new LocalModelProvider(configuredProvider)
+      : new LocalPlanningProvider();
   return provider;
 }
 
