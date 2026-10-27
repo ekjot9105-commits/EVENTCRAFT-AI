@@ -27,7 +27,7 @@ export interface CreateTimelineItemPayload {
 export interface UpdateTimelineItemPayload {
   title?: string;
   description?: string;
-  due_date?: string;
+  due_date?: string | null;
   status?: TimelineStatus;
   sort_order?: number;
 }

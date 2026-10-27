@@ -67,6 +67,7 @@ import type { BudgetItem, CreateBudgetItemPayload, UpdateBudgetItemPayload } fro
 import type { TimelineItem, CreateTimelineItemPayload, UpdateTimelineItemPayload } from '../../../shared/types/timeline';
 import type { Vendor, CreateVendorPayload, UpdateVendorPayload } from '../../../shared/types/vendor';
 import type { CopilotResponse, GeneratedPlan } from '../../../shared/types/ai';
+import type { Idea, CreateIdeaPayload } from '../../../shared/types/idea';
 
 // Event endpoints manage the top-level planning brief and event lifecycle.
 export const eventsApi = {
@@ -153,4 +154,12 @@ export const aiApi = {
       method: 'POST',
       body: JSON.stringify(proposal),
     }),
+};
+
+/** Ideas remain editable records after generation instead of transient AI text. */
+export const ideasApi = {
+  list: (eventId: string) => request<Idea[]>(`/events/${eventId}/ideas`),
+  create: (eventId: string, data: CreateIdeaPayload) => request<Idea>(`/events/${eventId}/ideas`, { method: 'POST', body: JSON.stringify(data) }),
+  save: (eventId: string, ideaId: string) => request<Idea>(`/events/${eventId}/ideas/${ideaId}`, { method: 'PATCH', body: JSON.stringify({ status: 'saved' }) }),
+  remove: (eventId: string, ideaId: string) => request<Idea>(`/events/${eventId}/ideas/${ideaId}`, { method: 'PATCH', body: JSON.stringify({ status: 'dismissed' }) }),
 };

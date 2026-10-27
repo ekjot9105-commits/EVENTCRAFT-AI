@@ -144,6 +144,13 @@ function OverviewTab({ event }: { event: Event }) {
         </p>
       </Card>
       <Card>
+        <h3 className="text-sm font-medium text-surface-400 mb-1">Budget</h3>
+        <p className="text-lg font-display font-semibold text-surface-100">
+          {event.budget_amount > 0 ? event.budget_amount.toLocaleString(undefined, { style: 'currency', currency: event.currency }) : 'Not set'}
+        </p>
+        <p className="mt-1 text-xs text-surface-500">Actual spending is shown in the Budget workspace.</p>
+      </Card>
+      <Card>
         <h3 className="text-sm font-medium text-surface-400 mb-1">Date</h3>
         <p className="text-lg font-display font-semibold text-surface-100">
           {event.date ? new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Not set'}

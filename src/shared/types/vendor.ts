@@ -37,12 +37,12 @@ export interface CreateVendorPayload {
 export interface UpdateVendorPayload {
   category?: string;
   name?: string;
-  contact_name?: string;
-  phone?: string;
-  email?: string;
-  website?: string;
+  contact_name?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  website?: string | null;
   status?: VendorStatus;
   quoted_cost?: number | null;
   final_cost?: number | null;
-  notes?: string;
+  notes?: string | null;
 }

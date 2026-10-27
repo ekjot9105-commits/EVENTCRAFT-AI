@@ -67,11 +67,11 @@ The type selector, schema, database check constraint, and core CRUD support `com
 | Persistence | `vendors` migration supports category, contact details, quoted/final costs, notes, and `not_started → contacted → quoted → booked → paid`; no code uses it. |
 | Acceptance test | Add a photographer, move it through the status workflow, verify invalid transitions/values are rejected as designed, and reload to verify persistence. |
 
-### 8. Personalized ideas — ❌
+### 8. Personalized ideas — ⚠️ Partial
 
 | Concern | Current or planned mapping |
 |---|---|
-| Feature/page | Planned `/events/:id/ideas`; current Ideas tab is a placeholder. |
+| Feature/page | `/events/:id/ideas` lists generated ideas and supports saved/dismissed states. Regeneration remains part of the next AI refinement. |
 | Backend/service | Planned generation and save/dismiss endpoints with validated AI output; none currently exist. |
 | Persistence | `ideas` migration supports category, title, description, estimated cost, and `new/saved/dismissed`; no code uses it. |
 | Acceptance test | Generate ideas for a themed event with a budget and season, verify the output reflects those inputs, save three, dismiss two, and reload. |

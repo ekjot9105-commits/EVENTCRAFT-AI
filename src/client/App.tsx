@@ -3,10 +3,10 @@ import Layout from './shared/components/Layout';
 import Dashboard from './features/dashboard/Dashboard';
 import CreateEvent from './features/events/CreateEvent';
 import EventDetail from './features/events/EventDetail';
-import FeaturePlaceholder from './features/shared/FeaturePlaceholder';
 import NotFound from './features/shared/NotFound';
 import PlanningWorkspace from './features/planning/PlanningWorkspace';
 import AICopilot from './features/assistant/AICopilot';
+import IdeasWorkspace from './features/ideas/IdeasWorkspace';
 
 /**
  * Defines the application's route tree.
@@ -27,7 +27,7 @@ export default function App() {
           <Route path="/events/:id/budget" element={<PlanningWorkspace kind="budget" />} />
           <Route path="/events/:id/timeline" element={<PlanningWorkspace kind="timeline" />} />
           <Route path="/events/:id/vendors" element={<PlanningWorkspace kind="vendors" />} />
-          <Route path="/events/:id/ideas" element={<FeaturePlaceholder title="Personalized ideas" description="Collect event ideas that will be tailored to your style, priorities, and guest experience." icon="lightbulb" />} />
+          <Route path="/events/:id/ideas" element={<IdeasWorkspace />} />
           <Route path="/events/:id/assistant" element={<AICopilot />} />
           <Route path="/events/:id/overview" element={<Navigate to=".." replace />} />
           <Route path="*" element={<NotFound />} />

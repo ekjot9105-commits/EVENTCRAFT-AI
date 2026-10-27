@@ -95,6 +95,10 @@ export default function Dashboard() {
                     <span>📍 {event.location}</span>
                   )}
                 </div>
+                <div className="mt-4 flex flex-wrap gap-2 text-xs text-surface-500">
+                  {event.budget_amount > 0 && <span className="rounded-full bg-white/5 px-2.5 py-1">Budget: {event.budget_amount.toLocaleString(undefined, { style: 'currency', currency: event.currency })}</span>}
+                  {event.date && <span className="rounded-full bg-white/5 px-2.5 py-1">{daysUntil(event.date)}</span>}
+                </div>
               </Card>
             </Link>
           ))}
@@ -102,4 +106,12 @@ export default function Dashboard() {
       )}
     </div>
   );
+}
+
+/** Returns a truthful countdown label without inventing a date when none exists. */
+function daysUntil(date: string): string {
+  const days = Math.ceil((new Date(date).getTime() - Date.now()) / 86_400_000);
+  if (days < 0) return `${Math.abs(days)} days ago`;
+  if (days === 0) return 'Today';
+  return `${days} days to go`;
 }

@@ -31,7 +31,8 @@ export interface UpdateBudgetItemPayload {
   estimated_cost?: number;
   actual_cost?: number | null;
   paid?: boolean;
-  notes?: string;
+  notes?: string | null;
+  sort_order?: number;
 }
 
 export interface BudgetSummary {

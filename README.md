@@ -64,7 +64,7 @@ src/
 └── shared/          # Types, Zod schemas, and constants
 ```
 
-The current frontend includes a responsive application shell, a five-step event planning brief, persistent event-scoped workspaces, and an AI Copilot route. Gemini generation is server-only and optional until credentials are configured; generated plans are schema-validated before persistence.
+The current frontend includes a responsive application shell, a five-step event planning brief, editable event-scoped workspaces, an ideas studio, and an AI Copilot route. Gemini generation is server-only and optional until credentials are configured; generated plans are schema-validated before persistence.
 
 Phase 2 persistence endpoints are available under `/api/events/:eventId/{budget,timeline,vendors}`. They validate request bodies with shared Zod schemas and use Supabase-backed services. The current deployment boundary is a single-user/demo environment: authentication, ownership, and row-level security are still required before public multi-user deployment.
 
