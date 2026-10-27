@@ -63,6 +63,11 @@ export function errorHandler(
     return;
   }
 
+  if (err.message.startsWith('Missing SUPABASE')) {
+    res.status(503).json({ error: 'Database is not configured. Add the Supabase variables from .env.example.' });
+    return;
+  }
+
   // Generic server error — don't leak internals
   res.status(500).json({
     error: 'An unexpected error occurred. Please try again.',

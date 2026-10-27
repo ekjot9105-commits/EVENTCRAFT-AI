@@ -131,7 +131,7 @@ export function ReviewStep({ data, onEdit }: { data: EventWizardData; onEdit: (s
     <section aria-labelledby="step-title">
       <p className="eyebrow">Step 5 of 5</p>
       <h2 id="step-title" className="page-title">Review your plan brief</h2>
-      <p className="page-subtitle">Confirm the details below. Saving this brief will be connected to persistence in Phase 2.</p>
+      <p className="page-subtitle">Confirm the details below. Your event plan will be saved so you can keep building it.</p>
       <Card className="mt-8">
         <dl>
           <ReviewRow label="Event" value={`${data.name} · ${data.type}`} onEdit={() => onEdit(1)} />
@@ -143,7 +143,7 @@ export function ReviewStep({ data, onEdit }: { data: EventWizardData; onEdit: (s
       </Card>
       <div className="notice mt-5" role="status">
         <Icon name="sparkles" className="h-5 w-5 shrink-0 text-brand-300" />
-        <p>This brief is ready for the next phase. No event has been saved yet.</p>
+        <p>Your brief is ready. Create the plan to open your budget, timeline, vendor checklist, ideas, and AI copilot.</p>
       </div>
     </section>
   );

@@ -8,6 +8,7 @@ import Button from '../../shared/components/Button';
 import { showToast } from '../../shared/components/Toast';
 import type { Event } from '../../../shared/types/event';
 import { EVENT_TYPE_LABELS, EVENT_TYPE_ICONS } from '../../../shared/constants/eventTypes';
+import BackButton from '../../shared/components/BackButton';
 
 /** Displays an event summary and routes users to each planning workspace. */
 const TABS = [
@@ -72,6 +73,7 @@ export default function EventDetail() {
 
   return (
     <div className="animate-fade-in">
+      <div className="mb-4"><BackButton /></div>
       {/* Event Header */}
       <header className="mb-8">
         <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -122,12 +124,7 @@ export default function EventDetail() {
 
       {/* Tab Content */}
       <section aria-label={`${TABS.find((t) => t.id === activeTab)?.label || 'Overview'} section`}>
-        {activeTab === 'overview' && <OverviewTab event={event} />}
-        {activeTab === 'budget' && <PlaceholderTab name="Budget" description="Budget management with AI-powered generation" icon="💰" />}
-        {activeTab === 'timeline' && <PlaceholderTab name="Timeline" description="Timeline milestones and deadline tracking" icon="📅" />}
-        {activeTab === 'vendors' && <PlaceholderTab name="Vendors" description="Vendor checklist with booking status" icon="🤝" />}
-        {activeTab === 'ideas' && <PlaceholderTab name="Ideas" description="AI-generated personalized event ideas" icon="💡" />}
-        {activeTab === 'assistant' && <PlaceholderTab name="AI Assistant" description="Context-aware planning assistant" icon="✨" />}
+        <OverviewTab event={event} />
       </section>
     </div>
   );
@@ -175,17 +172,5 @@ function OverviewTab({ event }: { event: Event }) {
         </p>
       </Card>
     </div>
-  );
-}
-
-/** Placeholder for tabs built in future phases */
-function PlaceholderTab({ name, description, icon }: { name: string; description: string; icon: string }) {
-  return (
-    <Card className="text-center py-16">
-      <span className="text-5xl block mb-4" role="img" aria-hidden="true">{icon}</span>
-      <h2 className="font-display font-semibold text-xl text-surface-200 mb-2">{name}</h2>
-      <p className="text-surface-500">{description}</p>
-      <p className="text-surface-600 text-sm mt-2">Coming in the next phase</p>
-    </Card>
   );
 }

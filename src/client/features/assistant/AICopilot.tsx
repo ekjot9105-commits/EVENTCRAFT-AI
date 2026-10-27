@@ -5,6 +5,7 @@ import Button from '../../shared/components/Button';
 import Card from '../../shared/components/Card';
 import Input from '../../shared/components/Input';
 import type { CopilotResponse, GeneratedPlan } from '../../../shared/types/ai';
+import BackButton from '../../shared/components/BackButton';
 
 /** Provides accessible question, response, and explicit proposal confirmation flows. */
 export default function AICopilot() {
@@ -46,6 +47,7 @@ export default function AICopilot() {
 
   return (
     <div className="space-y-5">
+      <BackButton />
       <div>
         <p className="eyebrow">Context-aware planning</p>
         <h1 className="page-title">AI Copilot</h1>

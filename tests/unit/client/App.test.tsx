@@ -17,14 +17,25 @@ describe('application shell and event wizard', () => {
     );
   });
 
-  it('renders the planning shell and clear feature entry points', async () => {
+  it('renders the product landing page and clear planning entry points', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('link', { name: /eventcraft ai dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /eventcraft ai home/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /your big moments deserve/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /start planning/i })).toBeInTheDocument();
+  });
+
+  it('renders the event workspace from the dashboard route', async () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <App />
+      </MemoryRouter>,
+    );
+
     expect(screen.getByRole('heading', { name: /your events/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /new event/i })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText(/no events yet/i)).toBeInTheDocument());

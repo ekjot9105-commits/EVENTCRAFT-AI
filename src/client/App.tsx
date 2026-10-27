@@ -7,6 +7,7 @@ import NotFound from './features/shared/NotFound';
 import PlanningWorkspace from './features/planning/PlanningWorkspace';
 import AICopilot from './features/assistant/AICopilot';
 import IdeasWorkspace from './features/ideas/IdeasWorkspace';
+import LandingPage from './features/landing/LandingPage';
 
 /**
  * Defines the application's route tree.
@@ -20,8 +21,9 @@ export default function App() {
       {/* Keep keyboard users oriented when navigating between routed pages. */}
       <a href="#main-content" className="skip-nav">Skip to main content</a>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route element={<Layout />}>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/events/new" element={<CreateEvent />} />
           <Route path="/events/:id" element={<EventDetail />} />
           <Route path="/events/:id/budget" element={<PlanningWorkspace kind="budget" />} />

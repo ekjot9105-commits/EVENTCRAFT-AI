@@ -10,7 +10,7 @@ interface NavigationItem {
 
 // Keep global navigation separate from event-specific workspaces.
 const primaryNavigation: NavigationItem[] = [
-  { label: 'Dashboard', href: '/', icon: 'dashboard' },
+  { label: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
 ];
 
 const eventNavigation: NavigationItem[] = [
@@ -51,13 +51,13 @@ export default function Layout() {
             <button type="button" className="icon-button lg:hidden" aria-label="Toggle navigation" aria-expanded={mobileOpen} onClick={() => setMobileOpen((open) => !open)}>
               <Icon name={mobileOpen ? 'close' : 'menu'} className="h-5 w-5" />
             </button>
-            <Link to="/" className="brand-mark" aria-label="EventCraft AI dashboard">
+            <Link to="/" className="brand-mark" aria-label="EventCraft AI home">
               <span className="brand-mark-icon"><Icon name="sparkles" className="h-4 w-4" /></span>
               <span>EventCraft <span className="text-brand-300">AI</span></span>
             </Link>
           </div>
           <div className="hidden items-center gap-3 sm:flex">
-            <span className="demo-pill">Phase 2 · Demo mode</span>
+            <Link to="/" className="text-sm font-medium text-surface-400 transition-colors hover:text-surface-100">About EventCraft</Link>
             <Link to="/events/new" className="header-action">
               <span aria-hidden="true">+</span> New event
             </Link>
@@ -90,7 +90,7 @@ export default function Layout() {
           </nav>
           <div className="sidebar-footer">
             <Icon name="sparkles" className="h-4 w-4 text-brand-300" />
-            <p><strong>AI planning, thoughtfully.</strong><br />Smart features will unlock in later phases.</p>
+            <p><strong>AI planning, thoughtfully.</strong><br />A clear plan for every meaningful moment.</p>
           </div>
         </aside>
 

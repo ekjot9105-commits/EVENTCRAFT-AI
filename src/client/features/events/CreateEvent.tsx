@@ -19,7 +19,7 @@ import {
 
 /**
  * Collects a planning brief without claiming persistence until the backend
- * event-creation flow is connected in a later phase.
+ * event-creation flow persists the brief before opening its planning workspace.
  */
 const DRAFT_KEY = 'eventcraft:event-wizard:draft';
 const MAX_STEP = 5;

@@ -8,7 +8,7 @@ export default function NotFound() {
       <p className="eyebrow">404 · Page not found</p>
       <h1 className="page-title">That planning page does not exist</h1>
       <p className="page-subtitle">Use the dashboard to return to your events and continue planning.</p>
-      <Link to="/" className="mt-8 inline-flex">
+      <Link to="/dashboard" className="mt-8 inline-flex">
         <Button type="button">Return to dashboard</Button>
       </Link>
     </div>

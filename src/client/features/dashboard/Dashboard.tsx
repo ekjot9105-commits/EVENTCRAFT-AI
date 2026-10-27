@@ -6,12 +6,25 @@ import Spinner from '../../shared/components/Spinner';
 import Badge from '../../shared/components/Badge';
 import type { Event } from '../../../shared/types/event';
 import { EVENT_TYPE_LABELS, EVENT_TYPE_ICONS } from '../../../shared/constants/eventTypes';
+import BackButton from '../../shared/components/BackButton';
 
 /** Loads the user's events and provides the primary entry point into planning. */
 export default function Dashboard() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const loadEvents = () => {
+    setLoading(true);
+    setError(null);
+    let cancelled = false;
+    eventsApi
+      .list()
+      .then((data) => { if (!cancelled) setEvents(data); })
+      .catch((err) => { if (!cancelled) setError(err.message); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -25,6 +38,7 @@ export default function Dashboard() {
 
   return (
     <div className="animate-fade-in">
+      <div className="mb-4"><BackButton fallback="/" /></div>
       {/* Hero */}
       <section className="text-center py-12 mb-8">
         <h1 className="font-display font-extrabold text-4xl sm:text-5xl gradient-text mb-4">
@@ -47,6 +61,8 @@ export default function Dashboard() {
         <Card className="text-center py-12">
           <p className="text-red-400 mb-2">Failed to load events</p>
           <p className="text-surface-500 text-sm">{error}</p>
+          <p className="mt-2 text-xs text-surface-600">Connect the workspace to Supabase to load saved events.</p>
+          <button type="button" className="mt-5 text-sm font-semibold text-brand-300 hover:text-brand-200" onClick={() => loadEvents()}>Try again</button>
         </Card>
       )}
 
