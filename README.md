@@ -34,6 +34,10 @@ This starts:
 
 The Vite dev server proxies `/api` requests to the Express server.
 
+For a production build, run `npm run build` and then `npm run server:start`. Keep
+`AUTH_ENABLED=false` until authenticated event ownership and Supabase row-level
+security are configured; the production API intentionally returns `503` otherwise.
+
 ## Available Scripts
 
 | Command | Description |
@@ -42,6 +46,7 @@ The Vite dev server proxies `/api` requests to the Express server.
 | `npm run dev:client` | Start only the Vite dev server |
 | `npm run dev:server` | Start only the Express server (with hot-reload) |
 | `npm run build` | Build for production |
+| `npm run server:start` | Start the compiled production server |
 | `npm test` | Run all tests |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run test:coverage` | Run tests with coverage report |
@@ -52,13 +57,13 @@ The Vite dev server proxies `/api` requests to the Express server.
 
 ```
 src/
-├── client/          # React frontend (dashboard and event CRUD)
+├── client/          # React frontend (dashboard and event planning workspaces)
 │   ├── features/    # Dashboard and event screens
 │   ├── shared/      # UI components and API client
 │   └── styles/      # Global CSS
 ├── server/          # Express backend
-│   ├── routes/      # Event API routes
-│   ├── services/    # Event business logic
+│   ├── routes/      # Event, planning, ideas, and AI API routes
+│   ├── services/    # Persistence and business logic
 │   ├── middleware/  # Validation and error handling
 │   └── db/          # Supabase client and migration
 └── shared/          # Types, Zod schemas, and constants
@@ -83,6 +88,7 @@ Production API access is intentionally disabled unless `AUTH_ENABLED=true`. Do n
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full architecture documentation.
 See [docs/PROBLEM_STATEMENT_ALIGNMENT.md](docs/PROBLEM_STATEMENT_ALIGNMENT.md) for the executable feature audit and [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) for the phased plan.
+See [docs/FINAL_SUBMISSION_REPORT.md](docs/FINAL_SUBMISSION_REPORT.md) for final verification evidence, limitations, and submission setup.
 
 ## License
 
