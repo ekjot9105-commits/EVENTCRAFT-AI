@@ -183,6 +183,16 @@
     @apply w-full max-w-lg rounded-2xl border border-white/10 bg-surface-900 p-6 shadow-2xl;
   }
 
+  .select-control {
+    color-scheme: dark;
+    background-color: theme('colors.surface.900');
+  }
+
+  .select-control option {
+    background-color: theme('colors.surface.900');
+    color: theme('colors.surface.100');
+  }
+
   .landing-page {
     @apply min-h-screen overflow-hidden bg-surface-950 text-surface-100;
     background-image: radial-gradient(circle at 50% -20%, rgba(92, 124, 250, 0.18), transparent 38rem);

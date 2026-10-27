@@ -74,7 +74,7 @@ This is not a security certification or penetration test.
 | Command | Result |
 |---|---|
 | `npm run type-check` | Passed |
-| `npm test` | 10 files, 56 tests passed |
+| `npm test` | 10 files, 57 tests passed |
 | `npm run lint` | Passed; 3 warnings |
 | `npm run build` | Passed; client and server artifacts emitted |
 | `npm run test:coverage` | Passed: 16.95% statements, 18.16% branches, 16.88% functions, 20.31% lines |
@@ -126,7 +126,7 @@ The browser smoke check opened the app, reached `/events/new`, and confirmed acc
 - Production server starts successfully.
 - Direct nested production routes serve the SPA.
 - Production API is deny-by-default without authentication.
-- 56 deterministic tests pass.
+- 57 deterministic tests pass.
 - All three event types are present in the wizard.
 - Core AI, planning, persistence, and proposal-confirmation boundaries are implemented and documented.
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, afterEach } from 'vitest';
-import { getAiProvider, setAiProviderForTests, type AiProvider } from '../../src/server/ai/provider';
+import { getAiProvider, LocalPlanningProvider, setAiProviderForTests, type AiProvider } from '../../src/server/ai/provider';
 
 const mockProvider: AiProvider = {
   generatePlan: async () => ({}) as never,
@@ -13,5 +13,15 @@ describe('AI provider boundary', () => {
   it('uses the injected mock provider', () => {
     setAiProviderForTests(mockProvider);
     expect(getAiProvider()).toBe(mockProvider);
+  });
+
+  it('creates a schema-compatible local starter plan without credentials', async () => {
+    const plan = await new LocalPlanningProvider().generatePlan(
+      'Create a structured wedding event plan. Budget: USD 10000; date: 2026-12-20T00:00:00.000Z;'
+    );
+
+    expect(plan.event_type).toBe('wedding');
+    expect(plan.budget_proposal.categories.length).toBeGreaterThan(0);
+    expect(plan.personalized_ideas.length).toBeGreaterThan(0);
   });
 });

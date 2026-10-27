@@ -55,7 +55,7 @@ export default function AICopilot() {
       </div>
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div><h2 className="text-lg font-semibold text-surface-100">Structured plan</h2><p className="text-sm text-surface-400">Gemini suggestions are validated before they are saved.</p></div>
+          <div><h2 className="text-lg font-semibold text-surface-100">Structured plan</h2><p className="text-sm text-surface-400">Suggestions are validated before they are saved. Gemini is used when configured; otherwise a local starter plan keeps the demo usable.</p></div>
           <Button onClick={generate} loading={busy}>Generate plan</Button>
         </div>
         {plan && <div className="mt-4 space-y-3 text-sm text-surface-300"><p>{plan.summary}</p><p><strong>{plan.budget_proposal.categories.length}</strong> budget categories · <strong>{plan.timeline.length}</strong> timeline tasks · <strong>{plan.personalized_ideas.length}</strong> ideas</p></div>}

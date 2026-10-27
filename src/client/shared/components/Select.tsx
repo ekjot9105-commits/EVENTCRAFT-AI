@@ -35,7 +35,7 @@ export default function Select({
 
       <select
         id={selectId}
-        className={`w-full px-3 py-2.5 bg-white/5 border rounded-xl text-surface-100 transition-colors focus:bg-white/10 focus:border-brand-500 appearance-none cursor-pointer ${
+        className={`select-control w-full px-3 py-2.5 border rounded-xl text-surface-100 transition-colors focus:bg-white/10 focus:border-brand-500 appearance-none cursor-pointer ${
           error ? 'border-red-400' : 'border-white/10'
         } ${className}`}
         aria-invalid={error ? 'true' : undefined}

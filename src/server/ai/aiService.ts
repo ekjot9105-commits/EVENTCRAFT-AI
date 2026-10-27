@@ -1,6 +1,6 @@
-import { getSupabase } from '../db/client.js';
 import { planningService } from '../services/planningService.js';
 import { eventService } from '../services/eventService.js';
+import { ideaService } from '../services/ideaService.js';
 import { buildCopilotPrompt, buildPlanPrompt } from './prompts.js';
 import { copilotResponseSchema, generatedPlanSchema, type CopilotResponse, type GeneratedPlan } from './schemas.js';
 import { getAiProvider } from './provider.js';
@@ -87,26 +87,21 @@ export class AiService {
         sort_order: index,
       });
     }
-    const supabase = getSupabase();
-    if (plan.vendor_checklist.length > 0) {
-      const { error } = await supabase.from('vendors').insert(plan.vendor_checklist.map((item) => ({
-        event_id: event.id,
+    for (const item of plan.vendor_checklist) {
+      await planningService.createVendor(event.id, {
         category: item.category,
         name: `Suggested ${item.category}`,
         notes: `${item.reason}\n${item.checklist.join('\n')}`,
-        quoted_cost: item.estimated_cost ?? null,
-      })));
-      if (error) throw new Error(`Failed to persist generated vendors: ${error.message}`);
+        quoted_cost: item.estimated_cost ?? undefined,
+      });
     }
-    if (plan.personalized_ideas.length > 0) {
-      const { error } = await supabase.from('ideas').insert(plan.personalized_ideas.map((item) => ({
-        event_id: event.id,
+    for (const item of plan.personalized_ideas) {
+      await ideaService.create(event.id, {
         category: item.category,
         title: item.title,
         description: `${item.description}\nWhy it matches: ${item.why_it_matches}`,
-        estimated_cost: item.estimated_cost ?? null,
-      })));
-      if (error) throw new Error(`Failed to persist generated ideas: ${error.message}`);
+        estimated_cost: item.estimated_cost ?? undefined,
+      });
     }
   }
 
