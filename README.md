@@ -7,7 +7,7 @@
 - **Node.js** 20+ (tested with v24.11)
 - **npm** 10+
 - **Supabase** account (free tier works) — [supabase.com](https://supabase.com)
-- **Google Gemini API key** — [Google AI Studio](https://aistudio.google.com/apikey) (required when AI modules are enabled; not used by the current event CRUD slice)
+- **Google Gemini API key** — [Google AI Studio](https://aistudio.google.com/apikey) (required for plan generation and copilot)
 
 ## Setup
 
@@ -17,11 +17,12 @@ npm install
 
 # 2. Create environment variables
 cp .env.example .env
-# Edit .env with your Supabase URL, keys, and Gemini API key
+# Edit .env with your Supabase URL, keys, Gemini API key, and optional model settings
 
 # 3. Set up the database
 # Go to your Supabase project → SQL Editor
 # Paste and run the contents of: src/server/db/migrations/001_initial_schema.sql
+# For an existing database, also run: src/server/db/migrations/002_phase2_event_fields.sql
 
 # 4. Start development
 npm run dev
@@ -63,7 +64,7 @@ src/
 └── shared/          # Types, Zod schemas, and constants
 ```
 
-The current frontend includes a responsive application shell, a five-step event planning brief, and persistent event-scoped workspaces for budget items, timeline milestones, and vendors. Ideas and the AI assistant remain explicit placeholders until their later implementation phases; the application does not present those modules as functional.
+The current frontend includes a responsive application shell, a five-step event planning brief, persistent event-scoped workspaces, and an AI Copilot route. Gemini generation is server-only and optional until credentials are configured; generated plans are schema-validated before persistence.
 
 Phase 2 persistence endpoints are available under `/api/events/:eventId/{budget,timeline,vendors}`. They validate request bodies with shared Zod schemas and use Supabase-backed services. The current deployment boundary is a single-user/demo environment: authentication, ownership, and row-level security are still required before public multi-user deployment.
 
@@ -72,7 +73,7 @@ Phase 2 persistence endpoints are available under `/api/events/:eventId/{budget,
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS
 - **Backend**: Node.js, Express, TypeScript
 - **Database**: PostgreSQL via Supabase
-- **AI**: Google Gemini API (planned, server-side only; no Gemini client is implemented in the baseline)
+- **AI**: Google Gemini API through the official `@google/genai` server SDK
 - **Validation**: Zod (shared client/server schemas)
 - **Testing**: Vitest, React Testing Library
 

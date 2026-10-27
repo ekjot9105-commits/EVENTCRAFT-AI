@@ -6,6 +6,7 @@ import EventDetail from './features/events/EventDetail';
 import FeaturePlaceholder from './features/shared/FeaturePlaceholder';
 import NotFound from './features/shared/NotFound';
 import PlanningWorkspace from './features/planning/PlanningWorkspace';
+import AICopilot from './features/assistant/AICopilot';
 
 /**
  * Defines the application's route tree.
@@ -27,7 +28,7 @@ export default function App() {
           <Route path="/events/:id/timeline" element={<PlanningWorkspace kind="timeline" />} />
           <Route path="/events/:id/vendors" element={<PlanningWorkspace kind="vendors" />} />
           <Route path="/events/:id/ideas" element={<FeaturePlaceholder title="Personalized ideas" description="Collect event ideas that will be tailored to your style, priorities, and guest experience." icon="lightbulb" />} />
-          <Route path="/events/:id/assistant" element={<FeaturePlaceholder title="AI Copilot" description="Ask context-aware planning questions and review suggested changes once the AI service is connected." icon="sparkles" />} />
+          <Route path="/events/:id/assistant" element={<AICopilot />} />
           <Route path="/events/:id/overview" element={<Navigate to=".." replace />} />
           <Route path="*" element={<NotFound />} />
         </Route>

@@ -56,6 +56,14 @@ This plan follows the existing React/Express/Supabase modular monolith. It does 
 
 ## Phase 4 — Personalized ideas and context-aware assistant
 
+Phase 3 AI foundation is now implemented ahead of this original roadmap ordering:
+
+- Server-only `@google/genai` provider with configurable model, timeout, output limits, and missing-credential errors.
+- Event-specific prompts for wedding, birthday, and community events.
+- Zod-validated structured plan generation with deterministic budget/date reconciliation.
+- Event-scoped AI Copilot endpoint and explicit confirmation flow for supported budget proposals.
+- Mockable provider boundary and schema tests without requiring live Gemini credentials.
+
 **Dependencies:** Phases 2–3 data and validated AI adapter.
 
 **Work**

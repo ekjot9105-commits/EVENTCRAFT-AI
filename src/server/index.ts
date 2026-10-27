@@ -10,6 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import eventRoutes from './routes/events.js';
 import planningRoutes from './routes/planning.js';
+import aiRoutes from './routes/ai.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -32,6 +33,7 @@ app.use(express.json({ limit: '1mb' }));
 // ===========================================
 app.use('/api/events', eventRoutes);
 app.use('/api', planningRoutes);
+app.use('/api', aiRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

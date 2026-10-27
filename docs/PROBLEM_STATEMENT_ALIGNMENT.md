@@ -4,7 +4,7 @@
 
 ## Audit baseline
 
-The current repository is an early event CRUD slice. `POST`, `GET`, `PATCH`, and `DELETE /api/events` are implemented against Supabase, and the client can create and list events. The budget, timeline, vendor, ideas, and assistant tabs are explicitly placeholders. No Gemini integration or related feature endpoints exist yet. The status below is therefore based on executable behavior, not on schema or UI intent alone.
+The current repository has event CRUD, persistent planning workspaces, and an optional server-side Gemini integration. Ideas are persisted by generated plans, while richer standalone idea editing remains planned. The status below is based on executable behavior, not on schema or UI intent alone.
 
 | Status | Meaning |
 |---|---|
@@ -14,11 +14,11 @@ The current repository is an early event CRUD slice. `POST`, `GET`, `PATCH`, and
 
 ## Requirement mapping
 
-### 1. GenAI-powered planning assistant — ❌
+### 1. GenAI-powered planning assistant — ⚠️ Partial
 
 | Concern | Current or planned mapping |
 |---|---|
-| Feature/page | Planned assistant panel at `/events/:id/assistant`; current route renders a placeholder in `src/client/features/events/EventDetail.tsx`. |
+| Feature/page | `/events/:id/assistant` provides structured plan generation and context-aware questions through server-only Gemini routes; live credentials are required. |
 | Backend/service | Planned `POST /api/events/:id/assistant/message` and `assistantService`; no route, Gemini client, or service currently exists. |
 | Persistence | Existing migration defines `assistant_messages(event_id, role, content, structured_actions, created_at)`, but no code writes or reads it. |
 | Acceptance test | Create a wedding with budget items, ask “How can I reduce my budget by 20%?”, verify the response references actual items, apply a validated action, and reload to verify the change and conversation persist. |

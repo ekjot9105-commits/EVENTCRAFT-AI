@@ -66,6 +66,7 @@ import type { Event, CreateEventPayload, UpdateEventPayload } from '../../../sha
 import type { BudgetItem, CreateBudgetItemPayload, UpdateBudgetItemPayload } from '../../../shared/types/budget';
 import type { TimelineItem, CreateTimelineItemPayload, UpdateTimelineItemPayload } from '../../../shared/types/timeline';
 import type { Vendor, CreateVendorPayload, UpdateVendorPayload } from '../../../shared/types/vendor';
+import type { CopilotResponse, GeneratedPlan } from '../../../shared/types/ai';
 
 // Event endpoints manage the top-level planning brief and event lifecycle.
 export const eventsApi = {
@@ -136,4 +137,20 @@ export const planningApi = {
       }),
     remove: (eventId: string, itemId: string) => request<void>(`/events/${eventId}/vendors/${itemId}`, { method: 'DELETE' }),
   },
+};
+
+/** Server-side AI operations; no provider credentials are included in requests. */
+export const aiApi = {
+  generatePlan: (eventId: string) =>
+    request<GeneratedPlan>(`/events/${eventId}/ai/generate`, { method: 'POST' }),
+  copilot: (eventId: string, message: string) =>
+    request<CopilotResponse>(`/events/${eventId}/ai/copilot`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    }),
+  confirmProposal: (eventId: string, proposal: NonNullable<CopilotResponse['proposal']>) =>
+    request<{ status: string; item?: unknown }>(`/events/${eventId}/ai/copilot/confirm`, {
+      method: 'POST',
+      body: JSON.stringify(proposal),
+    }),
 };

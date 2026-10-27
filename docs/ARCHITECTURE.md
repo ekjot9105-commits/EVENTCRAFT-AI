@@ -7,7 +7,7 @@ The repository is a TypeScript modular-monolith starter:
 - **Client:** React 18, React Router 6, Vite 8, Tailwind CSS 4 configuration, browser `fetch` API.
 - **Server:** Node.js ESM, Express 5, `cors`, `helmet`, `dotenv`, and Zod validation.
 - **Persistence:** Supabase PostgreSQL through `@supabase/supabase-js`; one SQL migration currently exists.
-- **AI:** Not implemented yet. `GEMINI_API_KEY` is documented but no Gemini SDK/client is present.
+- **AI:** Server-only `@google/genai` adapter with event-specific prompts, Zod output validation, bounded requests, and explicit copilot proposals.
 - **Quality:** Vitest 5, JSDOM, React Testing Library dependencies, ESLint 10. No Playwright configuration or CI workflow exists.
 
 No stack migration is recommended for Phase 0. The existing modular monolith is suitable; the priority is completing its missing vertical slices and correcting configuration drift.
@@ -28,7 +28,8 @@ src/
     routes/events.ts
     services/eventService.ts
     middleware/{validate,errorHandler}.ts
-    db/{client.ts,migrations/001_initial_schema.sql}
+    db/{client.ts,migrations/*.sql}
+    ai/{provider,prompts,schemas,aiService}.ts
   shared/
     constants/*
     schemas/*
@@ -72,7 +73,7 @@ React form
 
 ```text
 User request
-  -> authenticated event-scoped route
+  -> event-scoped route (authentication/ownership remains a deployment prerequisite)
   -> load event context through services
   -> redact/minimize prompt context
   -> server-only Gemini client
@@ -101,8 +102,8 @@ Current protections include JSON body size limit, Helmet, Zod body validation, s
 - Event IDs are not validated as UUIDs at the route boundary.
 - `metadata: z.record(z.unknown())` is broad and needs feature-specific schemas before AI or persistence use.
 - Development disables Helmet CSP; production CSP policy is not explicitly reviewed.
-- There is no rate limiting, request correlation, or redaction policy for logs.
-- AI output validation/sanitization is not implemented because AI is not implemented.
+- AI routes have a small in-memory per-IP rate limit and a 30-second provider timeout; production deployments should use a shared rate limiter.
+- AI output is parsed and validated before any persistence. User text is context only, not instruction authority.
 - `errorHandler` logs full error messages/stacks; future database/AI errors must be checked for secret or provider-response leakage.
 
 Never put `SUPABASE_SERVICE_ROLE_KEY` or `GEMINI_API_KEY` in client-exposed Vite variables. Keep `.env` ignored and rotate any real key if it appears in tracked files; no secret values were printed during this audit.

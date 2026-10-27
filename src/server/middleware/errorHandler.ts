@@ -15,6 +15,12 @@ export class AppError extends Error {
     super(message);
     this.name = 'AppError';
   }
+
+}
+
+/** Marks provider configuration failures as actionable service-unavailable errors. */
+export function serviceUnavailable(message: string): AppError {
+  return new AppError(503, message);
 }
 
 /**
@@ -44,6 +50,16 @@ export function errorHandler(
     res.status(err.statusCode).json({
       error: err.message,
     });
+    return;
+  }
+
+  if (err.name === 'AiConfigurationError') {
+    res.status(503).json({ error: 'AI service is not configured. Set the server Gemini credentials.' });
+    return;
+  }
+
+  if (err.name === 'AiProviderError') {
+    res.status(502).json({ error: 'The AI provider could not complete the request. Please try again.' });
     return;
   }
 
