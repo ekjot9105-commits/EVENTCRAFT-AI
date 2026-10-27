@@ -19,7 +19,7 @@ export function getSqlite(): DatabaseSync {
   database.exec(`
     PRAGMA foreign_keys = ON;
     CREATE TABLE IF NOT EXISTS events (
-      id TEXT PRIMARY KEY, type TEXT NOT NULL, title TEXT NOT NULL, description TEXT,
+      id TEXT PRIMARY KEY, owner_id TEXT NOT NULL DEFAULT 'demo-local-owner', type TEXT NOT NULL, title TEXT NOT NULL, description TEXT,
       date TEXT, guest_count INTEGER, location TEXT, budget_amount REAL NOT NULL DEFAULT 0,
       currency TEXT NOT NULL DEFAULT 'USD', metadata TEXT NOT NULL DEFAULT '{}',
       created_at TEXT NOT NULL, updated_at TEXT NOT NULL
@@ -46,11 +46,17 @@ export function getSqlite(): DatabaseSync {
       category TEXT NOT NULL, title TEXT NOT NULL, description TEXT, estimated_cost REAL,
       status TEXT NOT NULL DEFAULT 'new', created_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS ai_plans (
+      plan_id TEXT PRIMARY KEY, event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+      plan_json TEXT NOT NULL, generated_at TEXT NOT NULL, applied_at TEXT
+    );
     CREATE INDEX IF NOT EXISTS idx_sqlite_budget_event ON budget_items(event_id);
     CREATE INDEX IF NOT EXISTS idx_sqlite_timeline_event ON timeline_items(event_id);
     CREATE INDEX IF NOT EXISTS idx_sqlite_vendors_event ON vendors(event_id);
     CREATE INDEX IF NOT EXISTS idx_sqlite_ideas_event ON ideas(event_id);
+    CREATE INDEX IF NOT EXISTS idx_sqlite_ai_plans_event ON ai_plans(event_id, generated_at);
   `);
+  try { database.exec("ALTER TABLE events ADD COLUMN owner_id TEXT NOT NULL DEFAULT 'demo-local-owner'"); } catch { /* Existing databases already have the column. */ }
   return database;
 }
 
@@ -73,30 +79,30 @@ const parseMetadata = (value: unknown): Record<string, unknown> => {
 const eventRow = (row: SqliteRow): Event => ({ ...row, metadata: parseMetadata(row['metadata']) } as Event);
 const booleanRow = <T extends SqliteRow>(row: T): T => ({ ...row, paid: Boolean(row['paid']) });
 
-export function sqliteCreateEvent(data: CreateEventPayload): Event {
+export function sqliteCreateEvent(data: CreateEventPayload, ownerId = 'demo-local-owner'): Event {
   const timestamp = now();
   const id = randomUUID();
-  getSqlite().prepare(`INSERT INTO events (id,type,title,description,date,guest_count,location,budget_amount,currency,metadata,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(id, data.type, data.title, data.description ?? null, data.date ?? null, data.guest_count ?? null, data.location ?? null, data.budget_amount ?? 0, data.currency ?? 'USD', JSON.stringify(data.metadata ?? {}), timestamp, timestamp);
+  getSqlite().prepare(`INSERT INTO events (id,owner_id,type,title,description,date,guest_count,location,budget_amount,currency,metadata,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+    .run(id, ownerId, data.type, data.title, data.description ?? null, data.date ?? null, data.guest_count ?? null, data.location ?? null, data.budget_amount ?? 0, data.currency ?? 'USD', JSON.stringify(data.metadata ?? {}), timestamp, timestamp);
   return sqliteGetEvent(id) as Event;
 }
-export function sqliteGetEvent(id: string): Event | null {
-  const row = getSqlite().prepare('SELECT * FROM events WHERE id = ?').get(id) as SqliteRow | undefined;
+export function sqliteGetEvent(id: string, ownerId?: string): Event | null {
+  const row = getSqlite().prepare(ownerId ? 'SELECT * FROM events WHERE id = ? AND owner_id = ?' : 'SELECT * FROM events WHERE id = ?').get(...(ownerId ? [id, ownerId] : [id])) as SqliteRow | undefined;
   return row ? eventRow(row) : null;
 }
-export function sqliteListEvents(): Event[] {
-  return (getSqlite().prepare('SELECT * FROM events ORDER BY created_at DESC').all() as SqliteRow[]).map(eventRow);
+export function sqliteListEvents(ownerId = 'demo-local-owner'): Event[] {
+  return (getSqlite().prepare('SELECT * FROM events WHERE owner_id = ? ORDER BY created_at DESC').all(ownerId) as SqliteRow[]).map(eventRow);
 }
-export function sqliteUpdateEvent(id: string, data: UpdateEventPayload): Event | null {
-  const current = sqliteGetEvent(id);
+export function sqliteUpdateEvent(id: string, data: UpdateEventPayload, ownerId?: string): Event | null {
+  const current = sqliteGetEvent(id, ownerId);
   if (!current) return null;
   const next = { ...current, ...data, metadata: data.metadata ?? current.metadata, updated_at: now() };
-  getSqlite().prepare(`UPDATE events SET title=?,description=?,date=?,guest_count=?,location=?,budget_amount=?,currency=?,metadata=?,updated_at=? WHERE id=?`)
-    .run(next.title, next.description, next.date, next.guest_count, next.location, next.budget_amount, next.currency, JSON.stringify(next.metadata), next.updated_at, id);
-  return sqliteGetEvent(id);
+  getSqlite().prepare(`UPDATE events SET title=?,description=?,date=?,guest_count=?,location=?,budget_amount=?,currency=?,metadata=?,updated_at=? WHERE id=? AND owner_id=?`)
+    .run(next.title, next.description, next.date, next.guest_count, next.location, next.budget_amount, next.currency, JSON.stringify(next.metadata), next.updated_at, id, ownerId ?? 'demo-local-owner');
+  return sqliteGetEvent(id, ownerId);
 }
-export function sqliteDeleteEvent(id: string): boolean {
-  getSqlite().prepare('DELETE FROM events WHERE id = ?').run(id);
+export function sqliteDeleteEvent(id: string, ownerId = 'demo-local-owner'): boolean {
+  getSqlite().prepare('DELETE FROM events WHERE id = ? AND owner_id = ?').run(id, ownerId);
   return true;
 }
 
@@ -125,6 +131,20 @@ export function sqliteUpdate<T>(table: PlanningTable, eventId: string, id: strin
 export function sqliteRemove(table: PlanningTable, eventId: string, id: string): boolean {
   getSqlite().prepare(`DELETE FROM ${table} WHERE event_id = ? AND id = ?`).run(eventId, id);
   return true;
+}
+
+export function sqliteStorePlan(eventId: string, planId: string, plan: unknown, generatedAt: string): void {
+  getSqlite().prepare('INSERT INTO ai_plans (plan_id,event_id,plan_json,generated_at,applied_at) VALUES (?,?,?,?,NULL)')
+    .run(planId, eventId, JSON.stringify(plan), generatedAt);
+}
+
+export function sqliteListPlans(eventId: string): Array<{ plan_id: string; event_id: string; generated_at: string; applied_at: string | null; plan: unknown }> {
+  const rows = getSqlite().prepare('SELECT * FROM ai_plans WHERE event_id = ? ORDER BY generated_at DESC').all(eventId) as SqliteRow[];
+  return rows.map((row) => ({ plan_id: String(row['plan_id']), event_id: String(row['event_id']), generated_at: String(row['generated_at']), applied_at: row['applied_at'] ? String(row['applied_at']) : null, plan: JSON.parse(String(row['plan_json'])) as unknown }));
+}
+
+export function sqliteMarkPlanApplied(eventId: string, planId: string): void {
+  getSqlite().prepare('UPDATE ai_plans SET applied_at = ? WHERE event_id = ? AND plan_id = ?').run(now(), eventId, planId);
 }
 
 export function sqliteListIdeas(eventId: string): Idea[] {

@@ -66,7 +66,7 @@ import type { Event, CreateEventPayload, UpdateEventPayload } from '../../../sha
 import type { BudgetItem, CreateBudgetItemPayload, UpdateBudgetItemPayload } from '../../../shared/types/budget';
 import type { TimelineItem, CreateTimelineItemPayload, UpdateTimelineItemPayload } from '../../../shared/types/timeline';
 import type { Vendor, CreateVendorPayload, UpdateVendorPayload } from '../../../shared/types/vendor';
-import type { CopilotResponse, GeneratedPlan } from '../../../shared/types/ai';
+import type { CopilotResponse, StoredPlan } from '../../../shared/types/ai';
 import type { Idea, CreateIdeaPayload } from '../../../shared/types/idea';
 
 // Event endpoints manage the top-level planning brief and event lifecycle.
@@ -142,8 +142,14 @@ export const planningApi = {
 
 /** Server-side AI operations; no provider credentials are included in requests. */
 export const aiApi = {
+  status: () => request<{ provider: 'gemini' | 'ollama' | 'lmstudio' | 'local'; label: string }>('/ai/status'),
   generatePlan: (eventId: string) =>
-    request<GeneratedPlan>(`/events/${eventId}/ai/generate`, { method: 'POST' }),
+    request<StoredPlan>(`/events/${eventId}/ai/generate`, { method: 'POST' }),
+  listPlans: (eventId: string) => request<StoredPlan[]>(`/events/${eventId}/ai/plans`),
+  applyPlan: (eventId: string, planId: string) =>
+    request<StoredPlan>(`/events/${eventId}/ai/plans/apply`, { method: 'POST', body: JSON.stringify({ plan_id: planId }) }),
+  restorePlan: (eventId: string, planId: string) =>
+    request<StoredPlan>(`/events/${eventId}/ai/plans/restore`, { method: 'POST', body: JSON.stringify({ plan_id: planId }) }),
   copilot: (eventId: string, message: string) =>
     request<CopilotResponse>(`/events/${eventId}/ai/copilot`, {
       method: 'POST',

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Button from '../../shared/components/Button';
 import Icon from '../../shared/components/Icon';
 import { eventsApi } from '../../shared/api/client';
-import { showToast } from '../../shared/components/Toast';
+import { showToast } from '../../shared/components/toastBus';
 import {
   eventWizardSchema,
   initialEventWizardData,

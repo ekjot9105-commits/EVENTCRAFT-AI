@@ -32,6 +32,11 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
     }
   };
 
+  const handleCancel = (event: React.SyntheticEvent<HTMLDialogElement>) => {
+    event.preventDefault();
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -41,6 +46,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
       onClick={handleBackdropClick}
       aria-labelledby="modal-title"
       aria-modal="true"
+      onCancel={handleCancel}
     >
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">

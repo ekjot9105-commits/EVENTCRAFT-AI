@@ -27,8 +27,7 @@ cp .env.example .env
 # 3. Set up the database
 # SQLite mode creates data/eventcraft.sqlite automatically.
 # Go to your Supabase project → SQL Editor
-# Only for Supabase: paste and run the contents of: src/server/db/migrations/001_initial_schema.sql
-# For an existing database, also run: src/server/db/migrations/002_phase2_event_fields.sql
+# Only for Supabase: paste and run migrations 001 through 004 in order.
 
 # 4. Start development
 npm run dev
@@ -79,7 +78,7 @@ The current frontend includes an animated product landing page, a responsive pla
 
 Persistence endpoints are available under `/api/events/:eventId/{budget,timeline,vendors,ideas}`. They validate request bodies with shared Zod schemas and use the configured Supabase or SQLite persistence adapter. The current deployment boundary is a single-user/demo environment: authentication, ownership, and row-level security are still required before public multi-user deployment.
 
-Production API access is intentionally disabled unless `AUTH_ENABLED=true`. Do not enable that flag until authenticated event ownership and Supabase row-level security are configured.
+Production API access is intentionally disabled unless `AUTH_ENABLED=true`. When enabled with Supabase, send a Supabase JWT and run migrations 003 and 004 for ownership and plan history. SQLite remains a local single-owner demo provider.
 
 ### Database modes
 
@@ -112,6 +111,7 @@ SQLite uses Node 24's built-in `node:sqlite` module. Use Node 24+ for the local 
 ## Architecture
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full architecture documentation.
+See [docs/ENGINEERING_CONVENTIONS.md](docs/ENGINEERING_CONVENTIONS.md) for API, module, persistence, and AI boundary rules.
 See [docs/PROBLEM_STATEMENT_ALIGNMENT.md](docs/PROBLEM_STATEMENT_ALIGNMENT.md) for the executable feature audit and [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) for the phased plan.
 See [docs/FINAL_SUBMISSION_REPORT.md](docs/FINAL_SUBMISSION_REPORT.md) for final verification evidence, limitations, and submission setup.
 

@@ -11,8 +11,10 @@ import {
   updateVendorSchema,
 } from '../../shared/schemas/planning.schema.js';
 import { parseResourceId } from '../utils/resourceId.js';
+import { requireEventOwnership } from '../middleware/eventOwnership.js';
 
 const router = Router();
+router.use('/events/:eventId', requireEventOwnership);
 
 // Parse route IDs at the boundary so services only receive valid UUIDs.
 function eventId(req: Request): string {

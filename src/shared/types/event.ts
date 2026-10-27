@@ -7,6 +7,7 @@ import type { EventType } from '../constants/eventTypes.js';
 /** Core event entity as stored in the database */
 export interface Event {
   id: string;
+  owner_id: string;
   type: EventType;
   title: string;
   description: string | null;

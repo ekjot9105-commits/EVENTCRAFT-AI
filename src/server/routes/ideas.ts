@@ -4,8 +4,10 @@ import { validateBody } from '../middleware/validate.js';
 import { notFound } from '../middleware/errorHandler.js';
 import { parseResourceId } from '../utils/resourceId.js';
 import { ideaService } from '../services/ideaService.js';
+import { requireEventOwnership } from '../middleware/eventOwnership.js';
 
 const router = Router();
+router.use('/events/:eventId', requireEventOwnership);
 const eventId = (req: Request) => parseResourceId(String(req.params['eventId']));
 const ideaId = (req: Request) => parseResourceId(String(req.params['ideaId']));
 

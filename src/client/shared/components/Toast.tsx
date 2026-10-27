@@ -1,26 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-
-/** Minimal application-wide notification payload. */
-interface Toast {
-  id: number;
-  message: string;
-  type: 'success' | 'error' | 'info';
-}
-
-let toastIdCounter = 0;
-const listeners: Set<(toast: Toast) => void> = new Set();
-
-/** Show a toast notification from anywhere in the app. */
-export function showToast(message: string, type: Toast['type'] = 'info') {
-  const toast: Toast = { id: ++toastIdCounter, message, type };
-  listeners.forEach((listener) => listener(toast));
-}
+import { toastListeners, type ToastPayload } from './toastBus';
 
 /** Toast container — render once in the application shell. */
 export default function ToastContainer() {
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [toasts, setToasts] = useState<ToastPayload[]>([]);
 
-  const addToast = useCallback((toast: Toast) => {
+  const addToast = useCallback((toast: ToastPayload) => {
     setToasts((prev) => [...prev, toast]);
     // Auto-dismiss after 4 seconds
     setTimeout(() => {
@@ -29,8 +14,8 @@ export default function ToastContainer() {
   }, []);
 
   useEffect(() => {
-    listeners.add(addToast);
-    return () => { listeners.delete(addToast); };
+    toastListeners.add(addToast);
+    return () => { toastListeners.delete(addToast); };
   }, [addToast]);
 
   const colors = {

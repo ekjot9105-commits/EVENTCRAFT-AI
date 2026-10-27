@@ -6,9 +6,9 @@ Do not invent bookings, availability, confirmed prices, permissions, or legal ap
 Use estimates and assumptions explicitly. Return only the requested JSON structure.`;
 
 const eventGuidance: Record<Event['type'], string> = {
-  wedding: 'Cover ceremony/reception sequencing, venue, catering, photography, decoration, attire, cultural preferences, and guest experience without assuming traditions.',
-  birthday: 'Cover age-appropriate activities, cake, food, venue, entertainment, theme, setup, and guest experience without assuming the age or interests.',
-  community: 'Cover purpose, organizers/volunteers, venue capacity, accessibility, supplies, schedule, activities, and permissions requiring verification.',
+  wedding: 'Cover ceremony and reception sequencing, venue capacity, catering, photography, decoration, attire, cultural preferences, accessibility, and guest experience without assuming traditions.',
+  birthday: 'Cover age-range-appropriate activities, cake, food, venue, entertainment, theme, setup, dietary needs, and guest experience without assuming age or interests.',
+  community: 'Cover purpose, organizers and volunteers, venue capacity, accessibility, supplies, schedule, activities, safeguarding, permits, and permissions requiring verification.',
 };
 
 /** Builds an event-specific generation prompt outside React and route code. */

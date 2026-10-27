@@ -4,6 +4,7 @@ import { ideaService } from '../services/ideaService.js';
 import { buildCopilotPrompt, buildPlanPrompt } from './prompts.js';
 import { copilotResponseSchema, generatedPlanSchema, type CopilotResponse, type GeneratedPlan } from './schemas.js';
 import { getAiProvider } from './provider.js';
+import { getPlan, listPlans, markPlanApplied, storePlan, type StoredPlan } from './planStore.js';
 import type { Event } from '../../shared/types/event.js';
 import type { BudgetItem } from '../../shared/types/budget.js';
 import type { TimelineItem } from '../../shared/types/timeline.js';
@@ -18,13 +19,33 @@ interface EventContext {
 
 /** Orchestrates trusted application context, provider calls, validation, and persistence. */
 export class AiService {
-  async generatePlan(eventId: string): Promise<GeneratedPlan> {
+  async generatePlan(eventId: string): Promise<StoredPlan> {
     const context = await this.loadContext(eventId);
     const raw = await getAiProvider().generatePlan(buildPlanPrompt(context.event, this.serialize(context)));
     const plan = generatedPlanSchema.parse(raw);
     this.validatePlan(plan, context.event);
-    await this.persistPlan(context.event, plan);
-    return plan;
+    return storePlan(eventId, plan);
+  }
+
+  listPlans(eventId: string): StoredPlan[] {
+    return listPlans(eventId);
+  }
+
+  async applyPlan(eventId: string, planId: string): Promise<StoredPlan> {
+    const stored = getPlan(eventId, planId);
+    if (!stored) throw new Error('The plan preview is unavailable or belongs to another event.');
+    if (stored.applied_at) throw new Error('This plan version has already been applied.');
+    const context = await this.loadContext(eventId);
+    await this.persistPlan(context.event, stored.plan);
+    return markPlanApplied(eventId, planId) as StoredPlan;
+  }
+
+  async restorePlan(eventId: string, planId: string): Promise<StoredPlan> {
+    const stored = getPlan(eventId, planId);
+    if (!stored) throw new Error('The plan version is unavailable or belongs to another event.');
+    const context = await this.loadContext(eventId);
+    await this.persistPlan(context.event, stored.plan);
+    return markPlanApplied(eventId, planId) as StoredPlan;
   }
 
   async answerCopilot(eventId: string, message: string): Promise<CopilotResponse> {

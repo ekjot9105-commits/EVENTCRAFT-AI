@@ -5,7 +5,7 @@ import Card from '../../shared/components/Card';
 import Badge from '../../shared/components/Badge';
 import Spinner from '../../shared/components/Spinner';
 import Button from '../../shared/components/Button';
-import { showToast } from '../../shared/components/Toast';
+import { showToast } from '../../shared/components/toastBus';
 import type { Event } from '../../../shared/types/event';
 import { EVENT_TYPE_LABELS, EVENT_TYPE_ICONS } from '../../../shared/constants/eventTypes';
 import BackButton from '../../shared/components/BackButton';

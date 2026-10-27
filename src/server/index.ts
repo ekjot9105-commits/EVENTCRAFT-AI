@@ -14,6 +14,8 @@ import aiRoutes from './routes/ai.js';
 import ideaRoutes from './routes/ideas.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { deploymentGuard } from './middleware/deploymentGuard.js';
+import { resolveIdentity } from './middleware/auth.js';
+import { requestContext } from './middleware/requestContext.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,9 +29,12 @@ const PORT = parseInt(process.env['PORT'] || '3001', 10);
 app.use(helmet({
   contentSecurityPolicy: process.env['NODE_ENV'] === 'production' ? undefined : false,
 }));
-app.use(cors());
+const allowedOrigins = process.env['CORS_ORIGINS']?.split(',').map((origin) => origin.trim()).filter(Boolean);
+app.use(cors({ origin: allowedOrigins && allowedOrigins.length > 0 ? allowedOrigins : true }));
 app.use(express.json({ limit: '1mb' }));
+app.use('/api', requestContext);
 app.use('/api', deploymentGuard);
+app.use('/api', resolveIdentity);
 
 // ===========================================
 // API Routes
@@ -66,8 +71,8 @@ app.use(errorHandler);
 // Start Server
 // ===========================================
 app.listen(PORT, () => {
-  console.log(`✨ EventCraft AI server running on http://localhost:${PORT}`);
-  console.log(`   Environment: ${process.env['NODE_ENV'] || 'development'}`);
+  process.stdout.write(`EventCraft AI server running on http://localhost:${PORT}\n`);
+  process.stdout.write(`Environment: ${process.env['NODE_ENV'] || 'development'}\n`);
 });
 
 export default app;

@@ -7,11 +7,19 @@ import { parseResourceId } from '../utils/resourceId.js';
 import { planningService } from '../services/planningService.js';
 import { createBudgetItemSchema, updateBudgetItemSchema } from '../../shared/schemas/planning.schema.js';
 import { consumeProposal, storeProposal } from '../ai/proposalStore.js';
+import { getAiProviderStatus } from '../ai/provider.js';
+import { requireEventOwnership } from '../middleware/eventOwnership.js';
 
 const router = Router();
+router.use('/events/:eventId', requireEventOwnership);
 const messageSchema = z.object({ message: z.string().trim().min(1).max(2000) });
 const proposalSchema = z.object({
   proposal_id: z.string().uuid(),
+});
+const planSchema = z.object({ plan_id: z.string().uuid() });
+
+router.get('/ai/status', (_req, res) => {
+  res.json(getAiProviderStatus());
 });
 
 // AI routes are deliberately event-scoped so prompts cannot request unrelated data.
@@ -22,6 +30,30 @@ function eventId(req: Request): string {
 router.post('/events/:eventId/ai/generate', aiRateLimit, async (req, res, next) => {
   try {
     res.status(201).json(await aiService.generatePlan(eventId(req)));
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/events/:eventId/ai/plans', async (req, res, next) => {
+  try {
+    res.json(aiService.listPlans(eventId(req)));
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/events/:eventId/ai/plans/apply', validateBody(planSchema), async (req, res, next) => {
+  try {
+    res.json(await aiService.applyPlan(eventId(req), req.body.plan_id));
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/events/:eventId/ai/plans/restore', validateBody(planSchema), async (req, res, next) => {
+  try {
+    res.json(await aiService.restorePlan(eventId(req), req.body.plan_id));
   } catch (error) {
     next(error);
   }

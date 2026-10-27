@@ -12,6 +12,14 @@ export interface GeneratedPlan {
   event_day_schedule: Array<{ relative_time: string; activity: string; description: string; duration_minutes: number | null; dependencies: string[] }>;
 }
 
+export interface StoredPlan {
+  plan_id: string;
+  event_id: string;
+  generated_at: string;
+  applied_at: string | null;
+  plan: GeneratedPlan;
+}
+
 /** Copilot answers may include a proposal, but never an implicit mutation. */
 export interface CopilotResponse {
   answer: string;

@@ -1,5 +1,5 @@
 import { describe, expect, it, afterEach } from 'vitest';
-import { getAiProvider, LocalPlanningProvider, setAiProviderForTests, type AiProvider } from '../../src/server/ai/provider';
+import { getAiProvider, getAiProviderStatus, LocalPlanningProvider, setAiProviderForTests, type AiProvider } from '../../src/server/ai/provider';
 
 const mockProvider: AiProvider = {
   generatePlan: async () => ({}) as never,
@@ -23,5 +23,16 @@ describe('AI provider boundary', () => {
     expect(plan.event_type).toBe('wedding');
     expect(plan.budget_proposal.categories.length).toBeGreaterThan(0);
     expect(plan.personalized_ideas.length).toBeGreaterThan(0);
+  });
+
+  it('reports the configured keyless provider without exposing credentials', () => {
+    const previous = process.env['AI_PROVIDER'];
+    try {
+      process.env['AI_PROVIDER'] = 'local';
+      expect(getAiProviderStatus()).toEqual({ provider: 'local', label: 'Local starter' });
+    } finally {
+      if (previous === undefined) delete process.env['AI_PROVIDER'];
+      else process.env['AI_PROVIDER'] = previous;
+    }
   });
 });

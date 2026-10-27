@@ -8,6 +8,7 @@ import { validateBody } from '../middleware/validate.js';
 import { notFound } from '../middleware/errorHandler.js';
 import { createEventSchema, updateEventSchema } from '../../shared/schemas/event.schema.js';
 import { parseResourceId } from '../utils/resourceId.js';
+import { ownerId } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -16,7 +17,7 @@ const router = Router();
  */
 router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const events = await eventService.list();
+    const events = await eventService.list(ownerId(_req));
     res.json(events);
   } catch (err) {
     next(err);
@@ -29,7 +30,7 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = parseResourceId(String(req.params['id']));
-    const event = await eventService.getById(id);
+    const event = await eventService.getById(id, ownerId(req));
     if (!event) {
       throw notFound('Event', id);
     }
@@ -47,7 +48,7 @@ router.post(
   validateBody(createEventSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const event = await eventService.create(req.body);
+      const event = await eventService.create(req.body, ownerId(req));
       res.status(201).json(event);
     } catch (err) {
       next(err);
@@ -64,7 +65,7 @@ router.patch(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = parseResourceId(String(req.params['id']));
-      const event = await eventService.update(id, req.body);
+      const event = await eventService.update(id, req.body, ownerId(req));
       if (!event) {
         throw notFound('Event', id);
       }
@@ -80,7 +81,7 @@ router.patch(
  */
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await eventService.delete(parseResourceId(String(req.params['id'])));
+    await eventService.delete(parseResourceId(String(req.params['id'])), ownerId(req));
     res.status(204).send();
   } catch (err) {
     next(err);
