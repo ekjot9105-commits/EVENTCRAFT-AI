@@ -18,6 +18,7 @@ export interface CopilotResponse {
   needs_clarification: boolean;
   clarification_question: string | null;
   proposal: {
+    proposal_id?: string;
     explanation: string;
     action: 'update_budget' | 'add_budget' | 'update_timeline' | 'add_timeline' | 'update_vendor' | 'add_vendor';
     target_id: string | null;

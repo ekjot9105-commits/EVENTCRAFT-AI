@@ -6,15 +6,12 @@ import { aiRateLimit } from '../middleware/aiRateLimit.js';
 import { parseResourceId } from '../utils/resourceId.js';
 import { planningService } from '../services/planningService.js';
 import { createBudgetItemSchema, updateBudgetItemSchema } from '../../shared/schemas/planning.schema.js';
+import { consumeProposal, storeProposal } from '../ai/proposalStore.js';
 
 const router = Router();
 const messageSchema = z.object({ message: z.string().trim().min(1).max(2000) });
 const proposalSchema = z.object({
-  action: z.enum(['update_budget', 'add_budget', 'update_timeline', 'add_timeline', 'update_vendor', 'add_vendor']),
-  target_id: z.string().uuid().nullable(),
-  current_value: z.record(z.string(), z.unknown()).nullable(),
-  proposed_value: z.record(z.string(), z.unknown()),
-  explanation: z.string().min(1).max(1000),
+  proposal_id: z.string().uuid(),
 });
 
 // AI routes are deliberately event-scoped so prompts cannot request unrelated data.
@@ -32,7 +29,13 @@ router.post('/events/:eventId/ai/generate', aiRateLimit, async (req, res, next) 
 
 router.post('/events/:eventId/ai/copilot', aiRateLimit, validateBody(messageSchema), async (req, res, next) => {
   try {
-    res.json(await aiService.answerCopilot(eventId(req), req.body.message));
+    const response = await aiService.answerCopilot(eventId(req), req.body.message);
+    if (response.proposal?.requires_confirmation) {
+      const proposal_id = storeProposal(eventId(req), response.proposal);
+      res.json({ ...response, proposal: { ...response.proposal, proposal_id } });
+      return;
+    }
+    res.json(response);
   } catch (error) {
     next(error);
   }
@@ -41,8 +44,15 @@ router.post('/events/:eventId/ai/copilot', aiRateLimit, validateBody(messageSche
 router.post('/events/:eventId/ai/copilot/confirm', validateBody(proposalSchema), async (req, res, next) => {
   try {
     const id = eventId(req);
-    const proposal = req.body;
+    const stored = consumeProposal(req.body.proposal_id, id);
+    if (!stored) return res.status(409).json({ error: 'The proposal is expired, already used, or belongs to another event.' });
+    const proposal = stored.proposal;
     if (proposal.action === 'update_budget' && proposal.target_id) {
+      const currentItems = await planningService.listBudgetItems(id);
+      const currentItem = currentItems.find((item) => item.id === proposal.target_id);
+      if (!currentItem || (proposal.current_value && Object.entries(proposal.current_value).some(([key, value]) => currentItem[key as keyof typeof currentItem] !== value))) {
+        return res.status(409).json({ error: 'The proposal is stale or the item no longer exists.' });
+      }
       const parsed = updateBudgetItemSchema.safeParse(proposal.proposed_value);
       if (!parsed.success) return res.status(400).json({ error: 'The proposed budget update is invalid.' });
       const current = await planningService.updateBudgetItem(id, proposal.target_id, {

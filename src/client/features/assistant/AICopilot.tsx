@@ -36,7 +36,8 @@ export default function AICopilot() {
     if (!id || !answer?.proposal) return;
     setBusy(true); setError(null);
     try {
-      await aiApi.confirmProposal(id, answer.proposal);
+      if (!answer.proposal.proposal_id) throw new Error('This proposal is no longer available. Ask the copilot again.');
+      await aiApi.confirmProposal(id, answer.proposal.proposal_id);
       setAnswer({ ...answer, proposal: null, answer: 'The confirmed budget change was saved.' });
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'The proposal could not be saved.');

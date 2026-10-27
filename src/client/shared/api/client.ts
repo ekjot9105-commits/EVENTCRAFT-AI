@@ -149,10 +149,10 @@ export const aiApi = {
       method: 'POST',
       body: JSON.stringify({ message }),
     }),
-  confirmProposal: (eventId: string, proposal: NonNullable<CopilotResponse['proposal']>) =>
+  confirmProposal: (eventId: string, proposalId: string) =>
     request<{ status: string; item?: unknown }>(`/events/${eventId}/ai/copilot/confirm`, {
       method: 'POST',
-      body: JSON.stringify(proposal),
+      body: JSON.stringify({ proposal_id: proposalId }),
     }),
 };
 

@@ -50,7 +50,7 @@ The documentation describes future feature directories that do not yet exist. Ne
 | Services | Business rules, ownership checks, deterministic calculations, orchestration |
 | Validation | Zod schemas at every external request and AI response boundary |
 | Database client/repositories | Supabase access and query-specific persistence |
-| AI module | Server-only Gemini calls, bounded prompts, retries, output parsing, rate limits |
+| AI module | Server-only Gemini calls, bounded prompts, output parsing, rate limits, and expiring server-side proposal records |
 
 Routes must remain thin. Services must not receive Express `req`/`res`. Shared types should describe persisted and API shapes without making unvalidated client input trusted.
 
