@@ -63,7 +63,7 @@ src/
 └── shared/          # Types, Zod schemas, and constants
 ```
 
-Budget, timeline, vendor, ideas, and assistant modules are planned but are not implemented yet; the event detail tabs currently show explicit placeholders.
+The current frontend includes a responsive application shell, honest routes for each planned workspace, and a five-step event planning brief. The brief is intentionally draft-only in Phase 1: it does not report a saved event until the persistence flow is connected in a later phase. Budget, timeline, vendor, ideas, and assistant modules currently show explicit placeholders rather than pretending to be functional.
 
 ## Tech Stack
 

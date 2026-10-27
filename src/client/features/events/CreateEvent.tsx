@@ -1,171 +1,215 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { eventsApi } from '../../shared/api/client';
-import { showToast } from '../../shared/components/Toast';
-import Card from '../../shared/components/Card';
-import Input from '../../shared/components/Input';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Button from '../../shared/components/Button';
-import { EVENT_TYPES, EVENT_TYPE_LABELS, EVENT_TYPE_ICONS, EVENT_TYPE_DESCRIPTIONS } from '../../../shared/constants/eventTypes';
-import type { EventType } from '../../../shared/constants/eventTypes';
+import Icon from '../../shared/components/Icon';
+import {
+  eventWizardSchema,
+  initialEventWizardData,
+  type EventWizardData,
+} from '../../../shared/schemas/eventWizard.schema';
+import {
+  BudgetStep,
+  DetailsStep,
+  EventTypeStep,
+  PersonalizationStep,
+  ReviewStep,
+} from './eventWizardSteps';
+
+/**
+ * Collects a planning brief without claiming persistence until the backend
+ * event-creation flow is connected in a later phase.
+ */
+const DRAFT_KEY = 'eventcraft:event-wizard:draft';
+const MAX_STEP = 5;
+
+function readDraft(): EventWizardData {
+  try {
+    const stored = sessionStorage.getItem(DRAFT_KEY);
+    if (!stored) return initialEventWizardData;
+    const parsed = eventWizardSchema.partial().safeParse(JSON.parse(stored));
+    return parsed.success ? { ...initialEventWizardData, ...parsed.data } : initialEventWizardData;
+  } catch {
+    return initialEventWizardData;
+  }
+}
+
+function getStep(value: string | null): number {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 1 && parsed <= MAX_STEP ? parsed : 1;
+}
+
+function validateStep(step: number, data: EventWizardData): Record<string, string> {
+  const fieldsByStep: Record<number, (keyof EventWizardData)[]> = {
+    1: ['type'],
+    2: ['name', 'date', 'location', 'guestCount'],
+    3: ['budgetAmount', 'currency', 'priorities', 'flexibility'],
+    4: ['style', 'culturalPreferences', 'dietaryRequirements', 'notes', 'accessibilityRequirements'],
+    5: [],
+  };
+  const fields = fieldsByStep[step] ?? [];
+  const result = eventWizardSchema.safeParse(data);
+  if (result.success) return {};
+
+  return Object.fromEntries(
+    result.error.issues
+      .filter((issue) => fields.includes(issue.path[0] as keyof EventWizardData))
+      .map((issue) => [String(issue.path[0]), issue.message]),
+  );
+}
 
 export default function CreateEvent() {
   const navigate = useNavigate();
-  const [selectedType, setSelectedType] = useState<EventType | null>(null);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [date, setDate] = useState('');
-  const [guestCount, setGuestCount] = useState('');
-  const [location, setLocation] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [data, setData] = useState<EventWizardData>(readDraft);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const cancelTriggerRef = useRef<HTMLButtonElement>(null);
+  const cancelCloseRef = useRef<HTMLButtonElement>(null);
+  const hadCancelDialogOpen = useRef(false);
+  const step = getStep(searchParams.get('step'));
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!selectedType) {
-      setErrors({ type: 'Please select an event type' });
-      return;
+  useEffect(() => {
+    if (isCancelDialogOpen) {
+      cancelCloseRef.current?.focus();
+      hadCancelDialogOpen.current = true;
+    } else if (hadCancelDialogOpen.current) {
+      cancelTriggerRef.current?.focus();
     }
-    if (!title.trim()) {
-      setErrors({ title: 'Title is required' });
-      return;
-    }
+  }, [isCancelDialogOpen]);
 
-    setLoading(true);
+  useEffect(() => {
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+  }, [data]);
+
+  const progress = useMemo(() => `${(step / MAX_STEP) * 100}%`, [step]);
+
+  const update = (field: keyof EventWizardData, value: EventWizardData[keyof EventWizardData]) => {
+    setData((current) => ({ ...current, [field]: value }));
+    setErrors((current) => ({ ...current, [field]: '' }));
+  };
+
+  const goToStep = (nextStep: number, replace = false) => {
     setErrors({});
+    setSearchParams({ step: String(nextStep) }, { replace });
+  };
 
-    try {
-      const event = await eventsApi.create({
-        type: selectedType,
-        title: title.trim(),
-        description: description.trim() || undefined,
-        date: date ? new Date(date).toISOString() : undefined,
-        guest_count: guestCount ? parseInt(guestCount, 10) : undefined,
-        location: location.trim() || undefined,
-      });
-      showToast('Event created successfully!', 'success');
-      navigate(`/events/${event.id}`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create event';
-      showToast(message, 'error');
-      setErrors({ submit: message });
-    } finally {
-      setLoading(false);
+  const handleNext = () => {
+    const nextErrors = validateStep(step, data);
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
     }
+    goToStep(Math.min(step + 1, MAX_STEP));
+  };
+
+  const handleBack = () => {
+    if (step === 1) {
+      setIsCancelDialogOpen(true);
+      return;
+    }
+    goToStep(step - 1);
+  };
+
+  const handleReviewSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    const result = eventWizardSchema.safeParse(data);
+    if (!result.success) {
+      setErrors(Object.fromEntries(result.error.issues.map((issue) => [String(issue.path[0]), issue.message])));
+      return;
+    }
+    setErrors({});
+    setIsCancelDialogOpen(false);
+    goToStep(MAX_STEP, true);
+  };
+
+  const discardDraft = () => {
+    sessionStorage.removeItem(DRAFT_KEY);
+    navigate('/');
   };
 
   return (
-    <div className="max-w-2xl mx-auto animate-fade-in">
-      <h1 className="font-display font-bold text-3xl gradient-text mb-2">Create New Event</h1>
-      <p className="text-surface-400 mb-8">Choose your event type and fill in the details to get started.</p>
+    <div className="mx-auto max-w-4xl">
+      <div className="mb-8 flex items-start justify-between gap-5">
+        <div>
+          <p className="eyebrow">New planning brief</p>
+          <h1 className="page-title">Create your event plan</h1>
+          <p className="page-subtitle">A focused five-step setup for a plan that fits your event.</p>
+        </div>
+        <button ref={cancelTriggerRef} type="button" className="icon-button" aria-label="Cancel event setup" onClick={() => setIsCancelDialogOpen(true)}>
+          <Icon name="close" className="h-5 w-5" />
+        </button>
+      </div>
 
-      <form onSubmit={handleSubmit} noValidate>
-        {/* Event Type Selector */}
-        <fieldset className="mb-8">
-          <legend className="text-sm font-medium text-surface-300 mb-3">
-            Event Type <span className="text-red-400" aria-hidden="true">*</span>
-          </legend>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {EVENT_TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => { setSelectedType(type); setErrors({}); }}
-                className={`p-4 rounded-xl border-2 text-left transition-all ${
-                  selectedType === type
-                    ? 'border-brand-500 bg-brand-500/10 shadow-lg shadow-brand-600/10'
-                    : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/8'
-                }`}
-                role="radio"
-                aria-checked={selectedType === type}
-              >
-                <span className="text-3xl block mb-2" role="img" aria-hidden="true">
-                  {EVENT_TYPE_ICONS[type]}
-                </span>
-                <span className="font-display font-semibold text-surface-100 block">
-                  {EVENT_TYPE_LABELS[type]}
-                </span>
-                <span className="text-xs text-surface-500 mt-1 block">
-                  {EVENT_TYPE_DESCRIPTIONS[type]}
-                </span>
-              </button>
-            ))}
-          </div>
-          {errors['type'] && (
-            <p className="text-xs text-red-400 mt-2" role="alert">{errors['type']}</p>
+      <div className="mb-8" aria-label={`Step ${step} of ${MAX_STEP}`}>
+        <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-surface-500">
+          <span>Planning brief</span>
+          <span>{step} / {MAX_STEP}</span>
+        </div>
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+          <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: progress }} />
+        </div>
+        <ol className="mt-4 hidden grid-cols-5 gap-2 sm:grid">
+          {['Type', 'Details', 'Budget', 'Personalize', 'Review'].map((label, index) => {
+            const itemStep = index + 1;
+            return (
+              <li key={label} className={`text-xs ${itemStep <= step ? 'text-brand-300' : 'text-surface-600'}`}>
+                <span className="font-semibold">{itemStep}.</span> {label}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+
+      <form onSubmit={handleReviewSubmit} noValidate>
+        <div className="surface-panel p-5 sm:p-8">
+          {step === 1 && <EventTypeStep data={data} errors={errors} update={update} />}
+          {step === 2 && <DetailsStep data={data} errors={errors} update={update} />}
+          {step === 3 && <BudgetStep data={data} errors={errors} update={update} />}
+          {step === 4 && <PersonalizationStep data={data} errors={errors} update={update} />}
+          {step === 5 && <ReviewStep data={data} onEdit={goToStep} />}
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <Button type="button" variant="ghost" onClick={handleBack}>
+            <Icon name="arrow-left" className="h-4 w-4" />
+            {step === 1 ? 'Cancel' : 'Back'}
+          </Button>
+          {step < MAX_STEP ? (
+            <Button type="button" onClick={handleNext}>
+              Continue
+              <Icon name="arrow-right" className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button type="submit">
+              Continue to Phase 2
+              <Icon name="arrow-right" className="h-4 w-4" />
+            </Button>
           )}
-        </fieldset>
-
-        {/* Event Details */}
-        {selectedType && (
-          <Card className="animate-slide-up">
-            <div className="space-y-5">
-              <Input
-                label="Event Title"
-                placeholder={`My ${EVENT_TYPE_LABELS[selectedType]}`}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                error={errors['title']}
-                required
-                maxLength={200}
-              />
-
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="description" className="text-sm font-medium text-surface-300">
-                  Description
-                </label>
-                <textarea
-                  id="description"
-                  rows={3}
-                  placeholder="Describe your event..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  maxLength={2000}
-                  className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-surface-100 placeholder:text-surface-600 transition-colors focus:bg-white/10 focus:border-brand-500 resize-none"
-                />
-              </div>
-
-              <div className="grid gap-5 sm:grid-cols-2">
-                <Input
-                  label="Event Date"
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
-                <Input
-                  label="Expected Guests"
-                  type="number"
-                  min={1}
-                  max={100000}
-                  placeholder="100"
-                  value={guestCount}
-                  onChange={(e) => setGuestCount(e.target.value)}
-                />
-              </div>
-
-              <Input
-                label="Location"
-                placeholder="City, venue, or address"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                maxLength={500}
-              />
-
-              {errors['submit'] && (
-                <p className="text-sm text-red-400" role="alert">{errors['submit']}</p>
-              )}
-
-              <div className="flex justify-end gap-3 pt-2">
-                <Button type="button" variant="ghost" onClick={() => navigate('/')}>
-                  Cancel
-                </Button>
-                <Button type="submit" loading={loading}>
-                  Create Event
-                </Button>
-              </div>
-            </div>
-          </Card>
-        )}
+        </div>
       </form>
+
+      {isCancelDialogOpen && (
+        <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => {
+          if (event.target === event.currentTarget) setIsCancelDialogOpen(false);
+        }}>
+          <section className="dialog-card" role="dialog" aria-modal="true" aria-labelledby="cancel-title">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="eyebrow">Leave setup?</p>
+                <h2 id="cancel-title" className="text-xl font-semibold text-surface-100">Discard this planning brief?</h2>
+              </div>
+              <button ref={cancelCloseRef} type="button" className="icon-button" aria-label="Close cancel dialog" onClick={() => setIsCancelDialogOpen(false)}>
+                <Icon name="close" className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-surface-400">Your current values are kept in this browser session. You can continue later or discard them now.</p>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button type="button" variant="ghost" onClick={() => setIsCancelDialogOpen(false)}>Continue editing</Button>
+              <Button type="button" variant="danger" onClick={discardDraft}>Discard brief</Button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

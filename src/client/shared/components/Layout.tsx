@@ -1,51 +1,105 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
+import Icon, { type IconName } from './Icon';
+
+interface NavigationItem {
+  label: string;
+  href: string;
+  icon: IconName;
+}
+
+const primaryNavigation: NavigationItem[] = [
+  { label: 'Dashboard', href: '/', icon: 'dashboard' },
+];
+
+const eventNavigation: NavigationItem[] = [
+  { label: 'Overview', href: '', icon: 'clipboard' },
+  { label: 'Budget', href: 'budget', icon: 'wallet' },
+  { label: 'Timeline', href: 'timeline', icon: 'timeline' },
+  { label: 'Vendors', href: 'vendors', icon: 'users' },
+  { label: 'Ideas', href: 'ideas', icon: 'lightbulb' },
+  { label: 'AI Copilot', href: 'assistant', icon: 'sparkles' },
+];
+
+function NavigationLink({ item, active }: { item: NavigationItem; active: boolean }) {
+  return (
+    <Link to={item.href} className={`sidebar-link ${active ? 'sidebar-link-active' : ''}`}>
+      <Icon name={item.icon} className="h-[18px] w-[18px]" />
+      <span>{item.label}</span>
+    </Link>
+  );
+}
 
 export default function Layout() {
   const location = useLocation();
-  const isHome = location.pathname === '/';
+  const { id } = useParams<{ id?: string }>();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const isEventRoute = Boolean(id);
+  const eventBase = id ? `/events/${id}` : '';
+
+  const eventItems = eventNavigation.map((item) => ({
+    ...item,
+    href: `${eventBase}${item.href ? `/${item.href}` : ''}`,
+  }));
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-40 glass-card border-t-0 border-x-0 rounded-none">
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between" aria-label="Main navigation">
-          <Link to="/" className="flex items-center gap-3 group" aria-label="EventCraft AI — Home">
-            <span className="text-2xl" role="img" aria-hidden="true">✨</span>
-            <span className="font-display font-bold text-xl gradient-text group-hover:opacity-80 transition-opacity">
-              EventCraft AI
-            </span>
-          </Link>
-
+    <div className="min-h-screen bg-surface-950">
+      <header className="app-header">
+        <div className="flex h-16 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            {!isHome && (
-              <Link
-                to="/"
-                className="text-sm text-surface-400 hover:text-surface-200 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5"
-              >
-                ← All Events
-              </Link>
-            )}
-            <Link
-              to="/events/new"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium transition-all hover:shadow-lg hover:shadow-brand-600/25 active:scale-95"
-            >
-              <span aria-hidden="true">+</span>
-              New Event
+            <button type="button" className="icon-button lg:hidden" aria-label="Toggle navigation" aria-expanded={mobileOpen} onClick={() => setMobileOpen((open) => !open)}>
+              <Icon name={mobileOpen ? 'close' : 'menu'} className="h-5 w-5" />
+            </button>
+            <Link to="/" className="brand-mark" aria-label="EventCraft AI dashboard">
+              <span className="brand-mark-icon"><Icon name="sparkles" className="h-4 w-4" /></span>
+              <span>EventCraft <span className="text-brand-300">AI</span></span>
             </Link>
           </div>
-        </nav>
+          <div className="hidden items-center gap-3 sm:flex">
+            <span className="demo-pill">Phase 1 · Demo mode</span>
+            <Link to="/events/new" className="header-action">
+              <span aria-hidden="true">+</span> New event
+            </Link>
+          </div>
+        </div>
       </header>
 
-      {/* Main Content */}
-      <main id="main-content" className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-        <Outlet />
-      </main>
+      <div className="mx-auto flex max-w-[1600px]">
+        <aside className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}>
+          <div className="mb-6 flex items-center justify-between lg:hidden">
+            <span className="eyebrow">Workspace</span>
+            <button type="button" className="icon-button" aria-label="Close navigation" onClick={() => setMobileOpen(false)}>
+              <Icon name="close" className="h-5 w-5" />
+            </button>
+          </div>
+          <nav aria-label="Primary navigation" onClick={() => setMobileOpen(false)}>
+            <p className="sidebar-heading">Workspace</p>
+            {primaryNavigation.map((item) => <NavigationLink key={item.label} item={item} active={location.pathname === item.href} />)}
+            {isEventRoute && (
+              <>
+                <p className="sidebar-heading mt-7">Current event</p>
+                {eventItems.map((item) => {
+                  const active = item.href === eventBase
+                    ? location.pathname === eventBase
+                    : location.pathname.startsWith(item.href);
+                  return <NavigationLink key={item.label} item={item} active={active} />;
+                })}
+              </>
+            )}
+          </nav>
+          <div className="sidebar-footer">
+            <Icon name="sparkles" className="h-4 w-4 text-brand-300" />
+            <p><strong>AI planning, thoughtfully.</strong><br />Smart features will unlock in later phases.</p>
+          </div>
+        </aside>
 
-      {/* Footer */}
-      <footer className="border-t border-white/5 py-6 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-surface-600">
-          <p>EventCraft AI — Powered by Google Gemini</p>
-        </div>
+        <main id="main-content" className="min-w-0 flex-1 px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
+          <Outlet />
+        </main>
+      </div>
+
+      <footer className="border-t border-white/5 px-4 py-6 text-center text-xs text-surface-600">
+        EventCraft AI · A practical planning workspace
       </footer>
     </div>
   );

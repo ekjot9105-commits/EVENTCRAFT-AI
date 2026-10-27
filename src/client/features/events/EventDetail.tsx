@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { eventsApi } from '../../shared/api/client';
 import Card from '../../shared/components/Card';
 import Badge from '../../shared/components/Badge';
@@ -23,7 +23,6 @@ type TabId = (typeof TABS)[number]['id'];
 export default function EventDetail() {
   const { id, tab } = useParams<{ id: string; tab?: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +32,6 @@ export default function EventDetail() {
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
-    setLoading(true);
     eventsApi
       .getById(id)
       .then((data) => { if (!cancelled) setEvent(data); })

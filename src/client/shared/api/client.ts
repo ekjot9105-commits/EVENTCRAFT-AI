@@ -54,7 +54,7 @@ async function request<T>(
 
 // ===================== Event API =====================
 
-import type { Event, CreateEventPayload, UpdateEventPayload } from '../../shared/types/event';
+import type { Event, CreateEventPayload, UpdateEventPayload } from '../../../shared/types/event';
 
 export const eventsApi = {
   list: () => request<Event[]>('/events'),

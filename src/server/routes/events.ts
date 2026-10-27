@@ -27,9 +27,10 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
  */
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const event = await eventService.getById(req.params['id']!);
+    const id = String(req.params['id']);
+    const event = await eventService.getById(id);
     if (!event) {
-      throw notFound('Event', req.params['id']!);
+      throw notFound('Event', id);
     }
     res.json(event);
   } catch (err) {
@@ -61,9 +62,10 @@ router.patch(
   validateBody(updateEventSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const event = await eventService.update(req.params['id']!, req.body);
+      const id = String(req.params['id']);
+      const event = await eventService.update(id, req.body);
       if (!event) {
-        throw notFound('Event', req.params['id']!);
+        throw notFound('Event', id);
       }
       res.json(event);
     } catch (err) {
@@ -77,7 +79,7 @@ router.patch(
  */
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await eventService.delete(req.params['id']!);
+    await eventService.delete(String(req.params['id']));
     res.status(204).send();
   } catch (err) {
     next(err);

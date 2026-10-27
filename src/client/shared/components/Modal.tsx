@@ -40,6 +40,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
       className="fixed inset-0 z-50 m-auto max-w-lg w-full bg-surface-900 border border-white/10 rounded-2xl p-0 backdrop:bg-black/60 backdrop:backdrop-blur-sm animate-scale-in"
       onClick={handleBackdropClick}
       aria-labelledby="modal-title"
+      aria-modal="true"
     >
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
