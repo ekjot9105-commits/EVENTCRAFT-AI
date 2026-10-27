@@ -1,9 +1,11 @@
+/** Small status label used for event types and workflow states. */
 interface BadgeProps {
   children: React.ReactNode;
   color?: 'gray' | 'blue' | 'green' | 'yellow' | 'red' | 'emerald' | 'purple' | 'brand';
   size?: 'sm' | 'md';
 }
 
+// Keep visual status choices centralized so badges remain consistent across features.
 const colorMap = {
   gray: 'bg-surface-700/50 text-surface-300',
   blue: 'bg-blue-500/15 text-blue-400',

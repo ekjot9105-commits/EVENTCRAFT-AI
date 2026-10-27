@@ -1,10 +1,12 @@
 import type { SelectHTMLAttributes } from 'react';
 
+/** Option shape used by the shared select control. */
 interface SelectOption {
   value: string;
   label: string;
 }
 
+/** Labeled select primitive with accessible validation feedback. */
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
   options: SelectOption[];

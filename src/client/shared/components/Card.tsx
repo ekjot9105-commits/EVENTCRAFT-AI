@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+/** Surface primitive for grouping related content while preserving semantic HTML. */
 interface CardProps {
   children: ReactNode;
   className?: string;

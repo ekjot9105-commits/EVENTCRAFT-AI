@@ -7,6 +7,7 @@ import Badge from '../../shared/components/Badge';
 import type { Event } from '../../../shared/types/event';
 import { EVENT_TYPE_LABELS, EVENT_TYPE_ICONS } from '../../../shared/constants/eventTypes';
 
+/** Loads the user's events and provides the primary entry point into planning. */
 export default function Dashboard() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);

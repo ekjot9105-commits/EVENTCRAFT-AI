@@ -1,3 +1,4 @@
+// Public barrel for shared constants and their associated literal-union types.
 export { EVENT_TYPES, EVENT_TYPE_LABELS, EVENT_TYPE_ICONS, EVENT_TYPE_DESCRIPTIONS, EVENT_CATEGORIES } from './eventTypes.js';
 export type { EventType } from './eventTypes.js';
 

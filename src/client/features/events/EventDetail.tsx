@@ -9,6 +9,7 @@ import { showToast } from '../../shared/components/Toast';
 import type { Event } from '../../../shared/types/event';
 import { EVENT_TYPE_LABELS, EVENT_TYPE_ICONS } from '../../../shared/constants/eventTypes';
 
+/** Displays an event summary and routes users to each planning workspace. */
 const TABS = [
   { id: 'overview', label: 'Overview', icon: '📋' },
   { id: 'budget', label: 'Budget', icon: '💰' },

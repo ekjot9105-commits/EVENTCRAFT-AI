@@ -1,3 +1,4 @@
+// Shared lint policy for strict TypeScript, React hooks, and safe component exports.
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';

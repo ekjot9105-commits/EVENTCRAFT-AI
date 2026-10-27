@@ -1,5 +1,6 @@
 import type { InputHTMLAttributes } from 'react';
 
+/** Labeled input primitive that wires hints and validation messages to the field. */
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;

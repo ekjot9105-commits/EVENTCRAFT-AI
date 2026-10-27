@@ -1,3 +1,4 @@
+/** Announces an in-progress operation without requiring color alone. */
 interface SpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;

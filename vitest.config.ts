@@ -3,6 +3,7 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+// Keep browser-like component tests and server/shared tests under one runner.
 export default defineConfig({
   plugins: [react()],
   resolve: {

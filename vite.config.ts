@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+// Vite serves the client and proxies API requests to the local Express server.
 export default defineConfig({
   plugins: [react()],
   resolve: {

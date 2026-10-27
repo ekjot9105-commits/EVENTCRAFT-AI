@@ -4,6 +4,7 @@ import {
   initialEventWizardData,
 } from '../../../src/shared/schemas/eventWizard.schema';
 
+/** Verifies the complete Phase 1 planning brief contract and its boundaries. */
 describe('eventWizardSchema', () => {
   it('accepts a complete planning brief for each supported event type', () => {
     for (const type of ['wedding', 'birthday', 'community'] as const) {
