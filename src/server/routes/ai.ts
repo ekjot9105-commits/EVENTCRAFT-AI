@@ -1,4 +1,4 @@
-import { Router, type Request } from 'express';
+import { Router, type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
 import { aiService } from '../ai/aiService.js';
 import { validateBody } from '../middleware/validate.js';
@@ -18,7 +18,7 @@ const proposalSchema = z.object({
 });
 const planSchema = z.object({ plan_id: z.string().uuid() });
 
-router.get('/ai/status', (_req, res) => {
+router.get('/ai/status', (_req: Request, res: Response) => {
   res.json(getAiProviderStatus());
 });
 
@@ -27,7 +27,7 @@ function eventId(req: Request): string {
   return parseResourceId(String(req.params['eventId']));
 }
 
-router.post('/events/:eventId/ai/generate', aiRateLimit, async (req, res, next) => {
+router.post('/events/:eventId/ai/generate', aiRateLimit, async (req: Request, res: Response, next: NextFunction) => {
   try {
     res.status(201).json(await aiService.generatePlan(eventId(req)));
   } catch (error) {
@@ -35,7 +35,7 @@ router.post('/events/:eventId/ai/generate', aiRateLimit, async (req, res, next) 
   }
 });
 
-router.get('/events/:eventId/ai/plans', async (req, res, next) => {
+router.get('/events/:eventId/ai/plans', async (req: Request, res: Response, next: NextFunction) => {
   try {
     res.json(aiService.listPlans(eventId(req)));
   } catch (error) {
@@ -43,7 +43,7 @@ router.get('/events/:eventId/ai/plans', async (req, res, next) => {
   }
 });
 
-router.post('/events/:eventId/ai/plans/apply', validateBody(planSchema), async (req, res, next) => {
+router.post('/events/:eventId/ai/plans/apply', validateBody(planSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     res.json(await aiService.applyPlan(eventId(req), req.body.plan_id));
   } catch (error) {
@@ -51,7 +51,7 @@ router.post('/events/:eventId/ai/plans/apply', validateBody(planSchema), async (
   }
 });
 
-router.post('/events/:eventId/ai/plans/restore', validateBody(planSchema), async (req, res, next) => {
+router.post('/events/:eventId/ai/plans/restore', validateBody(planSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     res.json(await aiService.restorePlan(eventId(req), req.body.plan_id));
   } catch (error) {
@@ -59,7 +59,7 @@ router.post('/events/:eventId/ai/plans/restore', validateBody(planSchema), async
   }
 });
 
-router.post('/events/:eventId/ai/copilot', aiRateLimit, validateBody(messageSchema), async (req, res, next) => {
+router.post('/events/:eventId/ai/copilot', aiRateLimit, validateBody(messageSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const response = await aiService.answerCopilot(eventId(req), req.body.message);
     if (response.proposal?.requires_confirmation) {
@@ -73,7 +73,7 @@ router.post('/events/:eventId/ai/copilot', aiRateLimit, validateBody(messageSche
   }
 });
 
-router.post('/events/:eventId/ai/copilot/confirm', validateBody(proposalSchema), async (req, res, next) => {
+router.post('/events/:eventId/ai/copilot/confirm', validateBody(proposalSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = eventId(req);
     const stored = consumeProposal(req.body.proposal_id, id);

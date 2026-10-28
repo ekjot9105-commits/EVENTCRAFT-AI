@@ -3,7 +3,7 @@
 // ===========================================
 
 import 'dotenv/config';
-import express from 'express';
+import express, { type Request, type Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
@@ -45,7 +45,7 @@ app.use('/api', aiRoutes);
 app.use('/api', ideaRoutes);
 
 // Health check
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -57,7 +57,7 @@ if (process.env['NODE_ENV'] === 'production') {
   app.use(express.static(clientDist));
 
   // SPA fallback — serve index.html for all non-API routes
-  app.get('/{*splat}', (_req, res) => {
+  app.get('/{*splat}', (_req: Request, res: Response) => {
     res.sendFile(path.join(clientDist, 'index.html'));
   });
 }
