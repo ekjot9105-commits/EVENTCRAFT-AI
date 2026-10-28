@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, useCallback, type FormEvent, type ReactNode } from 'react';
 import { useParams } from 'react-router-dom';
 import { planningApi, eventsApi } from '../../shared/api/client';
 import Button from '../../shared/components/Button';
@@ -393,14 +393,14 @@ function TimelineWorkspace({ eventId, event, items, onChanged }: { eventId: stri
     return d;
   }, []);
 
-  const getUrgency = (item: TimelineItem) => {
+  const getUrgency = useCallback((item: TimelineItem) => {
     if (item.status === 'completed') return 'Completed';
     if (!item.due_date) return 'Upcoming';
     const due = new Date(item.due_date);
     if (due < today) return 'Overdue';
     if (due <= endOfWeek) return 'Due this week';
     return 'Upcoming';
-  };
+  }, [today, endOfWeek]);
 
   const counts = useMemo(() => {
     const map = { Overdue: 0, 'Due this week': 0, Upcoming: 0, Completed: 0 };
@@ -409,12 +409,12 @@ function TimelineWorkspace({ eventId, event, items, onChanged }: { eventId: stri
       map[u]++;
     });
     return map;
-  }, [items, today, endOfWeek]);
+  }, [items, getUrgency]);
 
   const filteredItems = useMemo(() => {
     if (urgencyFilter === 'All') return items;
     return items.filter((item) => getUrgency(item) === urgencyFilter);
-  }, [items, urgencyFilter, today, endOfWeek]);
+  }, [items, urgencyFilter, getUrgency]);
 
   const autoSeedTimeline = async () => {
     setBusy(true); setError(null);

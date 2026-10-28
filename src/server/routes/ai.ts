@@ -1,3 +1,7 @@
+// ===========================================
+// AI Planning & Copilot Routes
+// ===========================================
+
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
 import { aiService } from '../ai/aiService.js';
@@ -12,21 +16,30 @@ import { requireEventOwnership } from '../middleware/eventOwnership.js';
 
 const router = Router();
 router.use('/events/:eventId', requireEventOwnership);
+
 const messageSchema = z.object({ message: z.string().trim().min(1).max(2000) });
 const proposalSchema = z.object({
   proposal_id: z.string().uuid(),
 });
 const planSchema = z.object({ plan_id: z.string().uuid() });
 
+/**
+ * GET /api/ai/status — Reports current AI provider configuration and readiness
+ */
 router.get('/ai/status', (_req: Request, res: Response) => {
   res.json(getAiProviderStatus());
 });
 
-// AI routes are deliberately event-scoped so prompts cannot request unrelated data.
+/**
+ * Helper to extract and validate the eventId from URL parameters.
+ */
 function eventId(req: Request): string {
   return parseResourceId(String(req.params['eventId']));
 }
 
+/**
+ * POST /api/events/:eventId/ai/generate — Generates a full event plan (budget, timeline, vendors, ideas)
+ */
 router.post('/events/:eventId/ai/generate', aiRateLimit, async (req: Request, res: Response, next: NextFunction) => {
   try {
     res.status(201).json(await aiService.generatePlan(eventId(req)));
@@ -35,6 +48,9 @@ router.post('/events/:eventId/ai/generate', aiRateLimit, async (req: Request, re
   }
 });
 
+/**
+ * GET /api/events/:eventId/ai/plans — Retrieves historical and current plan versions
+ */
 router.get('/events/:eventId/ai/plans', async (req: Request, res: Response, next: NextFunction) => {
   try {
     res.json(aiService.listPlans(eventId(req)));
@@ -43,6 +59,9 @@ router.get('/events/:eventId/ai/plans', async (req: Request, res: Response, next
   }
 });
 
+/**
+ * POST /api/events/:eventId/ai/plans/apply — Applies a generated plan version to live workspaces
+ */
 router.post('/events/:eventId/ai/plans/apply', validateBody(planSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     res.json(await aiService.applyPlan(eventId(req), req.body.plan_id));
@@ -51,6 +70,9 @@ router.post('/events/:eventId/ai/plans/apply', validateBody(planSchema), async (
   }
 });
 
+/**
+ * POST /api/events/:eventId/ai/plans/restore — Restores an earlier plan snapshot
+ */
 router.post('/events/:eventId/ai/plans/restore', validateBody(planSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     res.json(await aiService.restorePlan(eventId(req), req.body.plan_id));
@@ -59,6 +81,9 @@ router.post('/events/:eventId/ai/plans/restore', validateBody(planSchema), async
   }
 });
 
+/**
+ * POST /api/events/:eventId/ai/copilot — Interactive conversational assistant with action proposals
+ */
 router.post('/events/:eventId/ai/copilot', aiRateLimit, validateBody(messageSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const response = await aiService.answerCopilot(eventId(req), req.body.message);
@@ -73,6 +98,9 @@ router.post('/events/:eventId/ai/copilot', aiRateLimit, validateBody(messageSche
   }
 });
 
+/**
+ * POST /api/events/:eventId/ai/copilot/confirm — Confirms and applies a staged Copilot proposal
+ */
 router.post('/events/:eventId/ai/copilot/confirm', validateBody(proposalSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = eventId(req);
