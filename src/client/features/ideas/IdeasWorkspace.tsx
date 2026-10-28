@@ -7,6 +7,8 @@ import Spinner from '../../shared/components/Spinner';
 import { showToast } from '../../shared/components/toastBus';
 import type { Idea } from '../../../shared/types/idea';
 import BackButton from '../../shared/components/BackButton';
+import Tilt3DCard from '../../shared/components/Tilt3DCard';
+import { fireConfetti } from '../../shared/utils/confettiBurst';
 
 const TAG_CHIPS = ['#All', '#BudgetFriendly', '#Entertainment', '#Decor', '#Interactive', '#Food & Drink'];
 
@@ -69,6 +71,7 @@ export default function IdeasWorkspace() {
         estimated_cost: idea.estimated_cost ?? 0,
       });
       setAddedToBudget((prev) => new Set(prev).add(idea.id));
+      fireConfetti(undefined, undefined, 45);
       showToast(`Added "${idea.title}" to Budget items`, 'success');
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Failed to add to budget', 'error');
@@ -82,6 +85,7 @@ export default function IdeasWorkspace() {
         title: idea.title,
       });
       setAddedToTimeline((prev) => new Set(prev).add(idea.id));
+      fireConfetti(undefined, undefined, 45);
       showToast(`Added "${idea.title}" to Timeline milestones`, 'success');
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Failed to add to timeline', 'error');
@@ -172,70 +176,71 @@ export default function IdeasWorkspace() {
               const hasTimeline = addedToTimeline.has(idea.id);
 
               return (
-                <article
-                  key={idea.id}
-                  className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-all hover:border-white/20 hover:shadow-lg flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="eyebrow text-brand-300 font-semibold">{idea.category}</span>
-                      {idea.estimated_cost != null && (
-                        <span className="rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-xs font-semibold text-emerald-300">
-                          Est. ${idea.estimated_cost.toFixed(2)}
-                        </span>
-                      )}
-                    </div>
-                    <h2 className="text-lg font-bold text-surface-100">{idea.title}</h2>
-                    <p className="mt-2 text-sm text-surface-300 leading-relaxed">{idea.description}</p>
-                  </div>
-
-                  {/* Actions Bar */}
-                  <div className="mt-5 border-t border-white/5 pt-4 space-y-2">
-                    {/* Primary Convert Buttons */}
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void addToBudgetAction(idea)}
-                        disabled={hasBudget}
-                        className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${
-                          hasBudget
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                            : 'bg-brand-600/20 text-brand-300 border border-brand-500/30 hover:bg-brand-600/30'
-                        }`}
-                      >
-                        {hasBudget ? '✓ In Budget' : '+ Add to Budget'}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => void addToTimelineAction(idea)}
-                        disabled={hasTimeline}
-                        className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${
-                          hasTimeline
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                            : 'bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30'
-                        }`}
-                      >
-                        {hasTimeline ? '✓ In Timeline' : '+ Add to Timeline'}
-                      </button>
+                <Tilt3DCard key={idea.id} intensity={8} glare={true} className="rounded-2xl h-full">
+                  <article
+                    className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-all hover:border-white/20 hover:shadow-lg flex flex-col justify-between h-full"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className="eyebrow text-brand-300 font-semibold">{idea.category}</span>
+                        {idea.estimated_cost != null && (
+                          <span className="rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-xs font-semibold text-emerald-300">
+                            Est. ${idea.estimated_cost.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                      <h2 className="text-lg font-bold text-surface-100">{idea.title}</h2>
+                      <p className="mt-2 text-sm text-surface-300 leading-relaxed">{idea.description}</p>
                     </div>
 
-                    {/* Save / Dismiss Controls */}
-                    <div className="flex items-center justify-between pt-1">
-                      <Button
-                        size="sm"
-                        onClick={() => void update(idea, 'saved')}
-                        disabled={idea.status === 'saved'}
-                        variant={idea.status === 'saved' ? 'secondary' : 'primary'}
-                      >
-                        {idea.status === 'saved' ? 'Saved' : 'Save Idea'}
-                      </Button>
-                      <Button size="sm" variant="danger" onClick={() => void update(idea, 'dismissed')}>
-                        Dismiss
-                      </Button>
+                    {/* Actions Bar */}
+                    <div className="mt-5 border-t border-white/5 pt-4 space-y-2">
+                      {/* Primary Convert Buttons */}
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void addToBudgetAction(idea)}
+                          disabled={hasBudget}
+                          className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${
+                            hasBudget
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                              : 'bg-brand-600/20 text-brand-300 border border-brand-500/30 hover:bg-brand-600/30'
+                          }`}
+                        >
+                          {hasBudget ? '✓ In Budget' : '+ Add to Budget'}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => void addToTimelineAction(idea)}
+                          disabled={hasTimeline}
+                          className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${
+                            hasTimeline
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                              : 'bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30'
+                          }`}
+                        >
+                          {hasTimeline ? '✓ In Timeline' : '+ Add to Timeline'}
+                        </button>
+                      </div>
+
+                      {/* Save / Dismiss Controls */}
+                      <div className="flex items-center justify-between pt-1">
+                        <Button
+                          size="sm"
+                          onClick={() => void update(idea, 'saved')}
+                          disabled={idea.status === 'saved'}
+                          variant={idea.status === 'saved' ? 'secondary' : 'primary'}
+                        >
+                          {idea.status === 'saved' ? 'Saved' : 'Save Idea'}
+                        </Button>
+                        <Button size="sm" variant="danger" onClick={() => void update(idea, 'dismissed')}>
+                          Dismiss
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </article>
+                  </article>
+                </Tilt3DCard>
               );
             })}
           </div>

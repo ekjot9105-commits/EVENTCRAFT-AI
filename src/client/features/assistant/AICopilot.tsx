@@ -10,6 +10,9 @@ import type { Event } from '../../../shared/types/event';
 import { EVENT_TYPE_LABELS, EVENT_TYPE_ICONS, type EventType } from '../../../shared/constants/eventTypes';
 import { EVENT_THEMES } from '../../shared/constants/eventThemes';
 import BackButton from '../../shared/components/BackButton';
+import AIOrb from '../../shared/components/AIOrb';
+import Tilt3DCard from '../../shared/components/Tilt3DCard';
+import { fireConfetti } from '../../shared/utils/confettiBurst';
 
 const STARTER_PROMPTS: Record<EventType, string[]> = {
   wedding: [
@@ -111,6 +114,7 @@ export default function AICopilot() {
       const applied = await aiApi.applyPlan(id, plan.plan_id);
       setPlan(applied);
       setVersions(await aiApi.listPlans(id));
+      fireConfetti(undefined, undefined, 75);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'The plan could not be applied.');
     } finally {
@@ -126,6 +130,7 @@ export default function AICopilot() {
     try {
       if (!answer.proposal.proposal_id) throw new Error('This proposal is no longer available. Ask the copilot again.');
       await aiApi.confirmProposal(id, answer.proposal.proposal_id);
+      fireConfetti(undefined, undefined, 60);
       setAnswer({ ...answer, proposal: null, answer: 'The confirmed budget change was saved.' });
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'The proposal could not be saved.');
@@ -143,26 +148,33 @@ export default function AICopilot() {
       <BackButton />
       
       {/* Header */}
-      <div className={`rounded-2xl border p-5 bg-gradient-to-r ${eventTheme?.gradientBg || 'from-surface-900 to-surface-800'} ${eventTheme?.borderAccent || 'border-white/10'}`}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl" role="img" aria-label="Event type">
-                {event ? EVENT_TYPE_ICONS[event.type] : '✨'}
-              </span>
-              <p className="eyebrow">Context-aware planning</p>
-              {event && (
-                <Badge color={eventTheme.badgeColor} size="sm">
-                  {EVENT_TYPE_LABELS[event.type]}
-                </Badge>
-              )}
+      <div className={`rounded-2xl border p-5 bg-gradient-to-r relative overflow-hidden ${eventTheme?.gradientBg || 'from-surface-900 to-surface-800'} ${eventTheme?.borderAccent || 'border-white/10'}`}>
+        <div className="flex flex-wrap items-center justify-between gap-4 relative z-10">
+          <div className="flex items-center gap-4">
+            <AIOrb
+              state={busy ? 'thinking' : answer ? 'answered' : 'idle'}
+              size={84}
+              className="flex-shrink-0"
+            />
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xl" role="img" aria-label="Event type">
+                  {event ? EVENT_TYPE_ICONS[event.type] : '✨'}
+                </span>
+                <p className="eyebrow">Context-aware planning</p>
+                {event && (
+                  <Badge color={eventTheme.badgeColor} size="sm">
+                    {EVENT_TYPE_LABELS[event.type]}
+                  </Badge>
+                )}
+              </div>
+              <h1 className="page-title text-2xl font-bold text-surface-100">
+                {event ? `${event.title} — AI Copilot` : 'AI Copilot'}
+              </h1>
+              <p className="page-subtitle text-sm text-surface-400">
+                Ask questions tailored to your event type or generate a full structured plan.
+              </p>
             </div>
-            <h1 className="page-title text-2xl font-bold text-surface-100">
-              {event ? `${event.title} — AI Copilot` : 'AI Copilot'}
-            </h1>
-            <p className="page-subtitle text-sm text-surface-400">
-              Ask questions tailored to your event type or generate a full structured plan.
-            </p>
           </div>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-400/30 bg-brand-400/10 px-3 py-1 text-xs text-brand-200">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -329,20 +341,25 @@ export default function AICopilot() {
               </div>
             )}
             {answer.proposal && (
-              <div className="mt-4 border-t border-white/10 pt-4">
-                <p className="font-medium text-surface-100">{answer.proposal.explanation}</p>
-                <p className="mt-1 text-surface-400">
-                  Expected budget impact: <strong className="text-emerald-400">${answer.proposal.expected_budget_impact.toFixed(2)}</strong>
-                </p>
-                <div className="mt-3 flex gap-2">
-                  <Button onClick={confirm} loading={busy}>
-                    Confirm change
-                  </Button>
-                  <Button variant="secondary" onClick={() => setAnswer({ ...answer, proposal: null })}>
-                    Cancel
-                  </Button>
+              <Tilt3DCard intensity={8} glare={true} className="mt-4 rounded-xl">
+                <div className="rounded-xl border border-brand-500/40 bg-gradient-to-br from-brand-950/30 to-surface-900 p-4">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-300 mb-1">
+                    <span>⚡</span> 3D Interactive AI Proposal
+                  </div>
+                  <p className="font-medium text-surface-100">{answer.proposal.explanation}</p>
+                  <p className="mt-1 text-surface-400">
+                    Expected budget impact: <strong className="text-emerald-400">${answer.proposal.expected_budget_impact.toFixed(2)}</strong>
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    <Button onClick={confirm} loading={busy}>
+                      Confirm change
+                    </Button>
+                    <Button variant="secondary" onClick={() => setAnswer({ ...answer, proposal: null })}>
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </Tilt3DCard>
             )}
           </div>
         )}

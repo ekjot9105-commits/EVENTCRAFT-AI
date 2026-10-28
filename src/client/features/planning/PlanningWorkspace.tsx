@@ -11,6 +11,10 @@ import type { TimelineItem } from '../../../shared/types/timeline';
 import type { Vendor } from '../../../shared/types/vendor';
 import type { Event } from '../../../shared/types/event';
 import BackButton from '../../shared/components/BackButton';
+import Tilt3DCard from '../../shared/components/Tilt3DCard';
+import Budget3DDonut from '../../shared/components/Budget3DDonut';
+import TimelineHighway3D from './TimelineHighway3D';
+import { fireConfetti } from '../../shared/utils/confettiBurst';
 
 type WorkspaceKind = 'budget' | 'timeline' | 'vendors';
 
@@ -137,6 +141,7 @@ function BudgetWorkspace({ eventId, event, items, onChanged }: { eventId: string
           estimated_cost: Math.round(effBudget * Number(ratio) * 100) / 100,
         });
       }
+      fireConfetti(undefined, undefined, 60);
       await onChanged();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to initialize budget');
@@ -157,6 +162,7 @@ function BudgetWorkspace({ eventId, event, items, onChanged }: { eventId: string
       const payload = { category, name, estimated_cost: estimatedCost, actual_cost: actual ? Number(actual) : undefined };
       if (editing) await planningApi.budget.update(eventId, editing.id, payload);
       else await planningApi.budget.create(eventId, payload);
+      fireConfetti(undefined, undefined, 45);
       reset(); await onChanged();
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Unable to save budget item.');
@@ -204,42 +210,64 @@ function BudgetWorkspace({ eventId, event, items, onChanged }: { eventId: string
           </span>
         </div>
 
-        {/* Progress Meter */}
-        <div className="space-y-1.5 mb-6">
-          <div className="flex justify-between text-xs font-medium text-surface-300">
-            <span>Spending Progress ({percentSpent}%)</span>
-            <span>{remaining >= 0 ? `$${remaining.toLocaleString()} Remaining` : `$${Math.abs(remaining).toLocaleString()} Over`}</span>
+        {/* Holographic 3D Budget Ring & Progress Meter */}
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] items-center mb-6">
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs font-medium text-surface-300">
+                <span>Spending Progress ({percentSpent}%)</span>
+                <span>{remaining >= 0 ? `$${remaining.toLocaleString()} Remaining` : `$${Math.abs(remaining).toLocaleString()} Over`}</span>
+              </div>
+              <div className="h-3 w-full overflow-hidden rounded-full bg-white/10 p-0.5">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ease-out ${progressFillColor}`}
+                  style={{ width: `${percentSpent}%` }}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-surface-400">
+              Interactive 3D budget ring reflects your live category allocations. Rotate the ring or hover slices to inspect financial distribution.
+            </p>
           </div>
-          <div className="h-3 w-full overflow-hidden rounded-full bg-white/10 p-0.5">
-            <div
-              className={`h-full rounded-full transition-all duration-700 ease-out ${progressFillColor}`}
-              style={{ width: `${percentSpent}%` }}
+          <div className="flex justify-center">
+            <Budget3DDonut
+              items={items}
+              totalBudget={totalEventBudget}
+              currency={event?.currency}
             />
           </div>
         </div>
 
-        {/* Metric Cards Grid */}
+        {/* Metric Cards Grid with 3D Tilt */}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-brand-500/20 bg-brand-950/20 p-4 text-center">
-            <p className="text-xs uppercase tracking-wider text-brand-300 font-semibold">Target Event Budget</p>
-            <p className="mt-1 text-2xl font-bold text-surface-100">
-              ${totalEventBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </p>
-          </div>
-          <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 text-center">
-            <p className="text-xs uppercase tracking-wider text-surface-400">Planned Allocations</p>
-            <p className="mt-1 text-2xl font-bold text-surface-100">${planned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          </div>
-          <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 text-center">
-            <p className="text-xs uppercase tracking-wider text-surface-400">Actual Spent</p>
-            <p className="mt-1 text-2xl font-bold text-surface-100">${actualTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          </div>
-          <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 text-center">
-            <p className="text-xs uppercase tracking-wider text-surface-400">Remaining Balance</p>
-            <p className={`mt-1 text-2xl font-bold ${remaining >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-              ${remaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </p>
-          </div>
+          <Tilt3DCard intensity={8} glare={true} className="rounded-xl">
+            <div className="rounded-xl border border-brand-500/20 bg-brand-950/20 p-4 text-center h-full">
+              <p className="text-xs uppercase tracking-wider text-brand-300 font-semibold">Target Event Budget</p>
+              <p className="mt-1 text-2xl font-bold text-surface-100">
+                ${totalEventBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+            </div>
+          </Tilt3DCard>
+          <Tilt3DCard intensity={8} glare={true} className="rounded-xl">
+            <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 text-center h-full">
+              <p className="text-xs uppercase tracking-wider text-surface-400">Planned Allocations</p>
+              <p className="mt-1 text-2xl font-bold text-surface-100">${planned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            </div>
+          </Tilt3DCard>
+          <Tilt3DCard intensity={8} glare={true} className="rounded-xl">
+            <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 text-center h-full">
+              <p className="text-xs uppercase tracking-wider text-surface-400">Actual Spent</p>
+              <p className="mt-1 text-2xl font-bold text-surface-100">${actualTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            </div>
+          </Tilt3DCard>
+          <Tilt3DCard intensity={8} glare={true} className="rounded-xl">
+            <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 text-center h-full">
+              <p className="text-xs uppercase tracking-wider text-surface-400">Remaining Balance</p>
+              <p className={`mt-1 text-2xl font-bold ${remaining >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                ${remaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+            </div>
+          </Tilt3DCard>
         </div>
 
         {/* Empty Items Helper */}
@@ -350,7 +378,7 @@ function TimelineWorkspace({ eventId, event, items, onChanged }: { eventId: stri
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [urgencyFilter, setUrgencyFilter] = useState<'All' | 'Overdue' | 'Due this week' | 'Upcoming' | 'Completed'>('All');
-  const [viewMode, setViewMode] = useState<'milestones' | 'run-of-show'>('milestones');
+  const [viewMode, setViewMode] = useState<'3d-highway' | 'milestones' | 'run-of-show'>('3d-highway');
 
   const today = useMemo(() => {
     const d = new Date();
@@ -430,6 +458,9 @@ function TimelineWorkspace({ eventId, event, items, onChanged }: { eventId: stri
   const toggle = async (item: TimelineItem) => {
     setBusy(true); setError(null);
     try {
+      if (item.status !== 'completed') {
+        fireConfetti(undefined, undefined, 50);
+      }
       await planningApi.timeline.update(eventId, item.id, { status: item.status === 'completed' ? 'pending' : 'completed' });
       await onChanged();
     } catch (requestError) {
@@ -476,8 +507,19 @@ function TimelineWorkspace({ eventId, event, items, onChanged }: { eventId: stri
 
   return (
     <WorkspaceLayout title="Timeline workspace" description="Create, edit, complete, and organize milestones and day-of schedules.">
-      {/* View Mode Toggle: Milestones vs Day-Of Run-of-Show */}
-      <div className="flex gap-2 border-b border-white/10 pb-3">
+      {/* View Mode Toggle: 3D Highway vs Milestones vs Day-Of Run-of-Show */}
+      <div className="flex flex-wrap gap-2 border-b border-white/10 pb-3">
+        <button
+          type="button"
+          onClick={() => setViewMode('3d-highway')}
+          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+            viewMode === '3d-highway'
+              ? 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-lg shadow-brand-600/30 ring-1 ring-white/20'
+              : 'text-surface-400 hover:text-surface-200 hover:bg-white/5'
+          }`}
+        >
+          <span>🛣️</span> 3D Spatial Highway
+        </button>
         <button
           type="button"
           onClick={() => setViewMode('milestones')}
@@ -487,7 +529,7 @@ function TimelineWorkspace({ eventId, event, items, onChanged }: { eventId: stri
               : 'text-surface-400 hover:text-surface-200 hover:bg-white/5'
           }`}
         >
-          <span>📅</span> Milestone Timeline
+          <span>📅</span> Milestone List
         </button>
         <button
           type="button"
@@ -594,41 +636,51 @@ function TimelineWorkspace({ eventId, event, items, onChanged }: { eventId: stri
           </div>
         </div>
 
-        <RecordList
-          empty="No tasks match this filter."
-          records={filteredItems.map((item) => {
-            const urgency = getUrgency(item);
-            let badgeStyle = 'bg-surface-700/50 text-surface-300';
-            if (urgency === 'Overdue') badgeStyle = 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
-            else if (urgency === 'Due this week') badgeStyle = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
-            else if (urgency === 'Completed') badgeStyle = 'bg-emerald-500/20 text-emerald-300';
+        {viewMode === '3d-highway' ? (
+          <TimelineHighway3D
+            items={filteredItems}
+            onToggle={toggle}
+            onEdit={edit}
+            onRemove={remove}
+            busy={busy}
+          />
+        ) : (
+          <RecordList
+            empty="No tasks match this filter."
+            records={filteredItems.map((item) => {
+              const urgency = getUrgency(item);
+              let badgeStyle = 'bg-surface-700/50 text-surface-300';
+              if (urgency === 'Overdue') badgeStyle = 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
+              else if (urgency === 'Due this week') badgeStyle = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+              else if (urgency === 'Completed') badgeStyle = 'bg-emerald-500/20 text-emerald-300';
 
-            return (
-              <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm text-surface-200 border-b border-white/5 last:border-none">
-                <div className="flex items-center gap-2">
-                  <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${badgeStyle}`}>
-                    {urgency}
-                  </span>
-                  <span className={item.status === 'completed' ? 'line-through text-surface-500' : 'text-surface-100 font-medium'}>
-                    {item.title}
-                  </span>
-                  {item.due_date && (
-                    <span className="text-xs text-surface-400">
-                      📅 {new Date(item.due_date).toLocaleDateString()}
+              return (
+                <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm text-surface-200 border-b border-white/5 last:border-none">
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${badgeStyle}`}>
+                      {urgency}
                     </span>
-                  )}
-                </div>
-                <span className="flex gap-2">
-                  <Button size="sm" onClick={() => void toggle(item)} disabled={busy} variant={item.status === 'completed' ? 'secondary' : 'primary'}>
-                    {item.status === 'completed' ? 'Reopen' : '✓ Complete'}
-                  </Button>
-                  <Button size="sm" variant="secondary" onClick={() => edit(item)}>Edit</Button>
-                  <Button size="sm" variant="danger" onClick={() => void remove(item)} disabled={busy}>Delete</Button>
-                </span>
-              </li>
-            );
-          })}
-        />
+                    <span className={item.status === 'completed' ? 'line-through text-surface-500' : 'text-surface-100 font-medium'}>
+                      {item.title}
+                    </span>
+                    {item.due_date && (
+                      <span className="text-xs text-surface-400">
+                        📅 {new Date(item.due_date).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                  <span className="flex gap-2">
+                    <Button size="sm" onClick={() => void toggle(item)} disabled={busy} variant={item.status === 'completed' ? 'secondary' : 'primary'}>
+                      {item.status === 'completed' ? 'Reopen' : '✓ Complete'}
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={() => edit(item)}>Edit</Button>
+                    <Button size="sm" variant="danger" onClick={() => void remove(item)} disabled={busy}>Delete</Button>
+                  </span>
+                </li>
+              );
+            })}
+          />
+        )}
       </Card>
     </WorkspaceLayout>
   );
@@ -684,6 +736,9 @@ function VendorWorkspace({ eventId, event, vendors, onChanged }: { eventId: stri
     setBusy(true); setError(null);
     try {
       const payload = { category, name, status };
+      if (status === 'booked' || status === 'paid') {
+        fireConfetti(undefined, undefined, 50);
+      }
       if (editing) await planningApi.vendors.update(eventId, editing.id, payload);
       else await planningApi.vendors.create(eventId, payload);
       reset(); await onChanged();
@@ -717,39 +772,41 @@ function VendorWorkspace({ eventId, event, vendors, onChanged }: { eventId: stri
 
   return (
     <WorkspaceLayout title="Vendor checklist" description="Track vendor categories, quotes, and booking readiness in one place.">
-      {/* Vendor Readiness Progress Bar Card */}
-      <Card className="border border-white/10 bg-gradient-to-br from-surface-900 to-surface-850 p-6 shadow-xl">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <div>
-            <span className="eyebrow">Booking Status</span>
-            <h2 className="text-xl font-bold text-surface-100 flex items-center gap-2">
-              <span>🤝</span> Vendor Readiness: {bookedCount} of {vendors.length} Booked
-            </h2>
+      {/* Vendor Readiness Progress Bar Card with 3D Tilt */}
+      <Tilt3DCard intensity={6} glare={true} className="rounded-2xl">
+        <Card className="border border-white/10 bg-gradient-to-br from-surface-900 to-surface-850 p-6 shadow-xl">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div>
+              <span className="eyebrow">Booking Status</span>
+              <h2 className="text-xl font-bold text-surface-100 flex items-center gap-2">
+                <span>🤝</span> Vendor Readiness: {bookedCount} of {vendors.length} Booked
+              </h2>
+            </div>
+            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+              {readinessPercent}% Ready
+            </span>
           </div>
-          <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
-            {readinessPercent}% Ready
-          </span>
-        </div>
 
-        {/* Progress bar */}
-        <div className="h-3 w-full overflow-hidden rounded-full bg-white/10 p-0.5">
-          <div
-            className="h-full rounded-full bg-emerald-500 transition-all duration-700 ease-out"
-            style={{ width: `${readinessPercent}%` }}
-          />
-        </div>
-
-        {vendors.length === 0 && (
-          <div className="mt-5 rounded-xl border border-brand-500/30 bg-brand-950/30 p-4 text-center">
-            <p className="text-sm text-surface-200">
-              No vendors tracked yet for this event.
-            </p>
-            <Button className="mt-3" size="sm" onClick={() => void autoSeedVendors()} loading={busy}>
-              ⚡ Auto-Generate Essential Vendor Checklist
-            </Button>
+          {/* Progress bar */}
+          <div className="h-3 w-full overflow-hidden rounded-full bg-white/10 p-0.5">
+            <div
+              className="h-full rounded-full bg-emerald-500 transition-all duration-700 ease-out"
+              style={{ width: `${readinessPercent}%` }}
+            />
           </div>
-        )}
-      </Card>
+
+          {vendors.length === 0 && (
+            <div className="mt-5 rounded-xl border border-brand-500/30 bg-brand-950/30 p-4 text-center">
+              <p className="text-sm text-surface-200">
+                No vendors tracked yet for this event.
+              </p>
+              <Button className="mt-3" size="sm" onClick={() => void autoSeedVendors()} loading={busy}>
+                ⚡ Auto-Generate Essential Vendor Checklist
+              </Button>
+            </div>
+          )}
+        </Card>
+      </Tilt3DCard>
 
       {/* Add / Edit Form */}
       <Card>
