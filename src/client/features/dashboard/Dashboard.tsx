@@ -6,6 +6,7 @@ import Spinner from '../../shared/components/Spinner';
 import Badge from '../../shared/components/Badge';
 import type { Event } from '../../../shared/types/event';
 import { EVENT_TYPE_LABELS, EVENT_TYPE_ICONS } from '../../../shared/constants/eventTypes';
+import { EVENT_THEMES } from '../../shared/constants/eventThemes';
 import BackButton from '../../shared/components/BackButton';
 
 /** Loads the user's events and provides the primary entry point into planning. */
@@ -87,14 +88,14 @@ export default function Dashboard() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => (
             <Link key={event.id} to={`/events/${event.id}`} className="block group">
-              <Card hover as="article">
+              <Card hover as="article" className={`border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${EVENT_THEMES[event.type]?.borderAccent || 'border-white/10'}`}>
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-2xl" role="img" aria-label={EVENT_TYPE_LABELS[event.type]}>
                     {EVENT_TYPE_ICONS[event.type]}
                   </span>
-                  <Badge color="brand">{EVENT_TYPE_LABELS[event.type]}</Badge>
+                  <Badge color={EVENT_THEMES[event.type]?.badgeColor || 'brand'}>{EVENT_TYPE_LABELS[event.type]}</Badge>
                 </div>
-                <h2 className="font-display font-semibold text-lg text-surface-100 mb-1 group-hover:text-brand-400 transition-colors">
+                <h2 className={`font-display font-semibold text-lg text-surface-100 mb-1 transition-colors ${EVENT_THEMES[event.type]?.textAccent || 'group-hover:text-brand-400'}`}>
                   {event.title}
                 </h2>
                 {event.description && (

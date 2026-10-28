@@ -8,6 +8,7 @@ import Button from '../../shared/components/Button';
 import { showToast } from '../../shared/components/toastBus';
 import type { Event } from '../../../shared/types/event';
 import { EVENT_TYPE_LABELS, EVENT_TYPE_ICONS } from '../../../shared/constants/eventTypes';
+import { EVENT_THEMES } from '../../shared/constants/eventThemes';
 import BackButton from '../../shared/components/BackButton';
 
 /** Displays an event summary and routes users to each planning workspace. */
@@ -74,15 +75,20 @@ export default function EventDetail() {
   return (
     <div className="animate-fade-in">
       <div className="mb-4"><BackButton /></div>
-      {/* Event Header */}
-      <header className="mb-8">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
+      {/* Event Header with event-type ambient gradient */}
+      <header className={`mb-8 relative overflow-hidden rounded-2xl border p-6 bg-gradient-to-r ${EVENT_THEMES[event.type]?.gradientBg || 'from-surface-900 to-surface-800'} ${EVENT_THEMES[event.type]?.borderAccent || 'border-white/10'}`}>
+        <div className="flex items-start justify-between gap-4 flex-wrap relative z-10">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span className="text-3xl" role="img" aria-label={EVENT_TYPE_LABELS[event.type]}>
                 {EVENT_TYPE_ICONS[event.type]}
               </span>
-              <Badge color="brand" size="md">{EVENT_TYPE_LABELS[event.type]}</Badge>
+              <Badge color={EVENT_THEMES[event.type]?.badgeColor || 'brand'} size="md">
+                {EVENT_TYPE_LABELS[event.type]}
+              </Badge>
+              <span className="text-xs text-surface-400 font-medium">
+                {EVENT_THEMES[event.type]?.tagline}
+              </span>
             </div>
             <h1 className="font-display font-bold text-3xl text-surface-100 mb-1">{event.title}</h1>
             {event.description && (

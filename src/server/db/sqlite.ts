@@ -79,11 +79,56 @@ const parseMetadata = (value: unknown): Record<string, unknown> => {
 const eventRow = (row: SqliteRow): Event => ({ ...row, metadata: parseMetadata(row['metadata']) } as Event);
 const booleanRow = <T extends SqliteRow>(row: T): T => ({ ...row, paid: Boolean(row['paid']) });
 
+function seedStarterPlanningRecords(eventId: string, type: Event['type'], budget: number, eventDateStr?: string | null): void {
+  const db = getSqlite();
+  const timestamp = now();
+  const eventTime = eventDateStr ? new Date(eventDateStr).getTime() : Date.now() + 60 * 86_400_000;
+  const daysBefore = (days: number) => new Date(Math.max(Date.now() + 86_400_000, eventTime - days * 86_400_000)).toISOString();
+
+  // 1. Budget items
+  const effectiveBudget = budget > 0 ? budget : (type === 'wedding' ? 5000 : type === 'birthday' ? 1000 : 2500);
+  const categories: Array<[string, number]> = type === 'wedding'
+    ? [['Venue & Catering', 0.45], ['Photography & Media', 0.15], ['Flowers & Decor', 0.15], ['Music & DJ', 0.15], ['Contingency Buffer', 0.10]]
+    : type === 'birthday'
+      ? [['Venue & Food', 0.40], ['Entertainment & Games', 0.25], ['Cake & Decor', 0.20], ['Favors & Contingency', 0.15]]
+      : [['Venue & Permits', 0.35], ['Food & Supplies', 0.30], ['Sound & Activities', 0.20], ['Volunteers & Safety', 0.15]];
+
+  const insertBudget = db.prepare(`INSERT INTO budget_items (id, event_id, category, name, estimated_cost, actual_cost, paid, notes, sort_order, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)`);
+  categories.forEach(([cat, ratio], idx) => {
+    insertBudget.run(randomUUID(), eventId, String(cat), `${cat} Allocation`, Math.round(effectiveBudget * Number(ratio) * 100) / 100, null, 0, 'Starter budget allocation', idx, timestamp, timestamp);
+  });
+
+  // 2. Timeline items
+  const insertTimeline = db.prepare(`INSERT INTO timeline_items (id, event_id, title, description, due_date, status, sort_order, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)`);
+  const milestones = [
+    { title: 'Confirm Venue Contract & Deposit', due: daysBefore(45), desc: 'Verify capacity and lock in booking.' },
+    { title: 'Lock in Catering & Dietary Choices', due: daysBefore(30), desc: 'Confirm menu packages and guest head count.' },
+    { title: 'Book Photographer & Music Team', due: daysBefore(21), desc: 'Sign agreements with core media and entertainment.' },
+    { title: 'Send Invitations & Confirm RSVPs', due: daysBefore(14), desc: 'Finalize attendee roster.' },
+    { title: 'Day-Of Setup & Event Execution', due: daysBefore(0), desc: 'Vendor load-in, event agenda, and wrap-up.' },
+  ];
+  milestones.forEach((m, idx) => {
+    insertTimeline.run(randomUUID(), eventId, m.title, m.desc, m.due, 'pending', idx, timestamp, timestamp);
+  });
+
+  // 3. Vendors
+  const insertVendor = db.prepare(`INSERT INTO vendors (id, event_id, category, name, contact_name, phone, email, website, status, quoted_cost, final_cost, notes, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+  const vendorList = type === 'wedding'
+    ? ['Venue Coordinator', 'Catering Specialist', 'Wedding Photographer', 'DJ / Sound Engineer', 'Florist & Decor']
+    : type === 'birthday'
+      ? ['Party Venue Host', 'Cake Artist', 'Party Entertainer / DJ', 'Balloon & Decor Specialist']
+      : ['Venue & Permits Office', 'Sound & Audio Provider', 'Food & Supplies Vendor', 'Safety Coordinator'];
+  vendorList.forEach((vName) => {
+    insertVendor.run(randomUUID(), eventId, vName, `${vName}`, null, null, null, null, 'not_started', null, null, 'Essential vendor checklist', timestamp, timestamp);
+  });
+}
+
 export function sqliteCreateEvent(data: CreateEventPayload, ownerId = 'demo-local-owner'): Event {
   const timestamp = now();
   const id = randomUUID();
   getSqlite().prepare(`INSERT INTO events (id,owner_id,type,title,description,date,guest_count,location,budget_amount,currency,metadata,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`)
     .run(id, ownerId, data.type, data.title, data.description ?? null, data.date ?? null, data.guest_count ?? null, data.location ?? null, data.budget_amount ?? 0, data.currency ?? 'USD', JSON.stringify(data.metadata ?? {}), timestamp, timestamp);
+  seedStarterPlanningRecords(id, data.type, data.budget_amount ?? 0, data.date);
   return sqliteGetEvent(id) as Event;
 }
 export function sqliteGetEvent(id: string, ownerId?: string): Event | null {
