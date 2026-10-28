@@ -16,8 +16,12 @@ export default defineConfig({
     outDir: 'dist/client',
     emptyOutDir: true,
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'zod'],
+  },
   server: {
     port: 5173,
+    host: true,
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

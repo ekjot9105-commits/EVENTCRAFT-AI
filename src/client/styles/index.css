@@ -194,7 +194,7 @@
   }
 
   .landing-page {
-    @apply min-h-screen overflow-hidden bg-surface-950 text-surface-100;
+    @apply min-h-screen overflow-x-hidden bg-surface-950 text-surface-100;
     background-image: radial-gradient(circle at 50% -20%, rgba(92, 124, 250, 0.18), transparent 38rem);
   }
 
