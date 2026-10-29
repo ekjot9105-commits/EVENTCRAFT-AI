@@ -22,6 +22,24 @@ export class ApiRequestError extends Error {
   }
 }
 
+const ANON_KEY = 'eventcraft_anon_id';
+
+function getStoredAnonId(): string | null {
+  try {
+    return typeof window !== 'undefined' ? localStorage.getItem(ANON_KEY) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setStoredAnonId(id: string): void {
+  try {
+    if (typeof window !== 'undefined') localStorage.setItem(ANON_KEY, id);
+  } catch {
+    // Ignore storage quota or disabled storage errors
+  }
+}
+
 /**
  * Execute a typed JSON request and normalize transport/API failures into one
  * error type that feature components can display consistently.
@@ -31,14 +49,21 @@ async function request<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
+  const anonId = getStoredAnonId();
 
   const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
+      ...(anonId ? { 'x-anon-id': anonId } : {}),
       ...options.headers,
     },
     ...options,
   });
+
+  const responseAnonId = res.headers?.get('x-anon-id');
+  if (responseAnonId && responseAnonId !== anonId) {
+    setStoredAnonId(responseAnonId);
+  }
 
   // 204 No Content
   if (res.status === 204) {

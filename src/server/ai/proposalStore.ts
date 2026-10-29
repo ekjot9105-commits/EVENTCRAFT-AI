@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { CopilotResponse } from './schemas.js';
+import { usesSqlite } from '../db/client.js';
+import { sqliteConsumeProposal, sqliteStoreProposal } from '../db/sqlite.js';
 
 interface StoredProposal {
   eventId: string;
@@ -8,18 +10,35 @@ interface StoredProposal {
 }
 
 const proposals = new Map<string, StoredProposal>();
-const PROPOSAL_TTL_MS = 10 * 60 * 1000;
+const PROPOSAL_TTL_MS = 15 * 60 * 1000;
 
 /** Keeps proposed mutations server-side until the user explicitly confirms them. */
 export function storeProposal(eventId: string, proposal: NonNullable<CopilotResponse['proposal']>): string {
   const id = randomUUID();
-  proposals.set(id, { eventId, proposal, expiresAt: Date.now() + PROPOSAL_TTL_MS });
+  const expiresAt = Date.now() + PROPOSAL_TTL_MS;
+  proposals.set(id, { eventId, proposal, expiresAt });
+  if (usesSqlite()) {
+    sqliteStoreProposal(id, eventId, proposal, expiresAt);
+  }
   return id;
 }
 
 export function consumeProposal(id: string, eventId: string): StoredProposal | null {
-  const stored = proposals.get(id);
+  const memoryStored = proposals.get(id);
   proposals.delete(id);
-  if (!stored || stored.eventId !== eventId || stored.expiresAt < Date.now()) return null;
-  return stored;
+  if (memoryStored && memoryStored.eventId === eventId && memoryStored.expiresAt >= Date.now()) {
+    if (usesSqlite()) sqliteConsumeProposal(id, eventId);
+    return memoryStored;
+  }
+  if (usesSqlite()) {
+    const sqliteRow = sqliteConsumeProposal(id, eventId);
+    if (sqliteRow && sqliteRow.expiresAt >= Date.now()) {
+      return { eventId, proposal: sqliteRow.proposal as NonNullable<CopilotResponse['proposal']>, expiresAt: sqliteRow.expiresAt };
+    }
+  }
+  return null;
+}
+
+export function resetProposalStore(): void {
+  proposals.clear();
 }

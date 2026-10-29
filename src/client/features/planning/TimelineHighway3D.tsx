@@ -155,6 +155,34 @@ export default function TimelineHighway3D({
                         <p className="mt-1 text-xs text-surface-400 line-clamp-2">{item.description}</p>
                       )}
 
+                      {/* Visual Task Dependency Connectors & Prerequisites */}
+                      {item.dependencies && item.dependencies.length > 0 && (
+                        <div className="mt-3 flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400/90 flex items-center gap-1">
+                            <svg className="w-3 h-3 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                            Linked Prerequisite:
+                          </span>
+                          {item.dependencies.map((depId: string) => {
+                            const parent = items.find((it) => it.id === depId);
+                            const isParentDone = parent?.status === 'completed';
+                            return (
+                              <span
+                                key={depId}
+                                className={`text-[10px] px-2 py-0.5 rounded-md flex items-center gap-1 border ${
+                                  isParentDone
+                                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                                    : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                                }`}
+                              >
+                                {isParentDone ? '✓' : '⏳'} {parent ? parent.title : `Task ${depId.slice(0, 6)}`}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+
                       <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
                         <button
                           type="button"

@@ -286,23 +286,67 @@ export default function Budget3DDonut({
     ctx.restore();
   }, [slices, totalBudget, hoveredSlice, rotation, remaining, currency]);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      setRotation((prev) => prev - 0.2);
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      setRotation((prev) => prev + 0.2);
+    }
+  };
+
   return (
-    <div className={`relative flex flex-col items-center select-none ${className}`}>
+    <figure
+      role="region"
+      aria-label="3D Interactive Budget Breakdown"
+      className={`relative flex flex-col items-center select-none ${className}`}
+    >
+      <figcaption className="sr-only">
+        Interactive 3D Budget Ring for {currency} {totalBudget.toLocaleString()}.
+        Remaining funds: {remaining >= 0 ? '+' : '-'}{currency} {Math.abs(remaining).toLocaleString()}.
+      </figcaption>
+
       <canvas
         ref={canvasRef}
         style={{ width: 320, height: 240 }}
-        className="cursor-grab active:cursor-grabbing transition-transform"
+        tabIndex={0}
+        role="img"
+        aria-label={`3D Budget Ring with ${slices.length} categories. Use Left and Right arrow keys to rotate.`}
+        className="cursor-grab active:cursor-grabbing transition-transform focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-xl"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        aria-label="3D Interactive Budget Ring"
+        onKeyDown={handleKeyDown}
       />
-      <div className="flex items-center gap-2 text-[11px] text-surface-400 mt-1">
-        <span>✨ Drag to rotate 3D ring</span>
+
+      <div className="flex items-center gap-2 text-[11px] text-surface-400 mt-1" aria-hidden="true">
+        <span>✨ Drag or Arrow keys to rotate</span>
         <span>•</span>
         <span>Hover slices to inspect</span>
       </div>
-    </div>
+
+      {/* Screen-reader accessible data table */}
+      <table className="sr-only">
+        <caption>Category allocations and expenditure</caption>
+        <thead>
+          <tr>
+            <th scope="col">Category</th>
+            <th scope="col">Planned Amount</th>
+            <th scope="col">Share of Budget</th>
+          </tr>
+        </thead>
+        <tbody>
+          {slices.map((slice) => (
+            <tr key={slice.category}>
+              <td>{slice.category}</td>
+              <td>{currency} {slice.amount.toLocaleString()}</td>
+              <td>{Math.round(slice.percent * 100)}%</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </figure>
   );
 }

@@ -50,11 +50,16 @@ export function getSqlite(): DatabaseSync {
       plan_id TEXT PRIMARY KEY, event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
       plan_json TEXT NOT NULL, generated_at TEXT NOT NULL, applied_at TEXT
     );
+    CREATE TABLE IF NOT EXISTS ai_proposals (
+      proposal_id TEXT PRIMARY KEY, event_id TEXT NOT NULL,
+      proposal_json TEXT NOT NULL, expires_at INTEGER NOT NULL
+    );
     CREATE INDEX IF NOT EXISTS idx_sqlite_budget_event ON budget_items(event_id);
     CREATE INDEX IF NOT EXISTS idx_sqlite_timeline_event ON timeline_items(event_id);
     CREATE INDEX IF NOT EXISTS idx_sqlite_vendors_event ON vendors(event_id);
     CREATE INDEX IF NOT EXISTS idx_sqlite_ideas_event ON ideas(event_id);
     CREATE INDEX IF NOT EXISTS idx_sqlite_ai_plans_event ON ai_plans(event_id, generated_at);
+    CREATE INDEX IF NOT EXISTS idx_sqlite_ai_proposals ON ai_proposals(event_id, expires_at);
   `);
   try { database.exec("ALTER TABLE events ADD COLUMN owner_id TEXT NOT NULL DEFAULT 'demo-local-owner'"); } catch { /* Existing databases already have the column. */ }
   return database;
@@ -203,4 +208,22 @@ export function sqliteCreateIdea(eventId: string, data: CreateIdeaPayload): Idea
 export function sqliteUpdateIdea(eventId: string, id: string, data: UpdateIdeaPayload): Idea | null {
   getSqlite().prepare('UPDATE ideas SET status = ? WHERE event_id = ? AND id = ?').run(data.status, eventId, id);
   return getSqlite().prepare('SELECT * FROM ideas WHERE event_id = ? AND id = ?').get(eventId, id) as unknown as Idea | null;
+}
+
+export function sqliteStoreProposal(id: string, eventId: string, proposal: unknown, expiresAt: number): void {
+  try {
+    getSqlite().prepare('INSERT INTO ai_proposals (proposal_id, event_id, proposal_json, expires_at) VALUES (?, ?, ?, ?)')
+      .run(id, eventId, JSON.stringify(proposal), expiresAt);
+  } catch {
+    // Graceful fallback for mock unit-test IDs
+  }
+}
+
+export function sqliteConsumeProposal(id: string, eventId: string): { proposal: unknown; expiresAt: number } | null {
+  const row = getSqlite().prepare('SELECT * FROM ai_proposals WHERE proposal_id = ? AND event_id = ?').get(id, eventId) as SqliteRow | undefined;
+  if (!row) return null;
+  getSqlite().prepare('DELETE FROM ai_proposals WHERE proposal_id = ?').run(id);
+  const expiresAt = Number(row['expires_at']);
+  if (expiresAt < Date.now()) return null;
+  return { proposal: JSON.parse(String(row['proposal_json'])), expiresAt };
 }

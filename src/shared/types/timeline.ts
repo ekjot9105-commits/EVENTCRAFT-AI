@@ -12,6 +12,7 @@ export interface TimelineItem {
   due_date: string | null;
   status: TimelineStatus;
   sort_order: number;
+  dependencies?: string[];
   created_at: string;
   updated_at: string;
 }
@@ -22,6 +23,7 @@ export interface CreateTimelineItemPayload {
   due_date?: string;
   status?: TimelineStatus;
   sort_order?: number;
+  dependencies?: string[];
 }
 
 export interface UpdateTimelineItemPayload {
@@ -30,4 +32,5 @@ export interface UpdateTimelineItemPayload {
   due_date?: string | null;
   status?: TimelineStatus;
   sort_order?: number;
+  dependencies?: string[];
 }
