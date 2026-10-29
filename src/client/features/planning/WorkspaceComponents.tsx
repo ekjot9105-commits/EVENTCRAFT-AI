@@ -18,3 +18,4 @@ export function WorkspaceLayout({ title, description, children }: { title: strin
 export function RecordList({ records, empty }: { records: ReactNode[]; empty: string }) {
   return records.length === 0 ? <p className="text-sm text-surface-400 py-4 text-center">{empty}</p> : <ul className="divide-y divide-white/5">{records}</ul>;
 }
+

@@ -307,3 +307,4 @@ export default function BudgetWorkspace({ eventId, event, items, onChanged }: Bu
     </WorkspaceLayout>
   );
 }
+

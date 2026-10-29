@@ -242,3 +242,4 @@ export default function VendorWorkspace({ eventId, event, vendors, onChanged }: 
     </WorkspaceLayout>
   );
 }
+

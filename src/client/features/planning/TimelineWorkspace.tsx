@@ -330,3 +330,4 @@ export default function TimelineWorkspace({ eventId, event, items, onChanged }: 
     </WorkspaceLayout>
   );
 }
+
