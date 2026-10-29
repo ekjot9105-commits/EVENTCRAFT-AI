@@ -12,6 +12,7 @@ import eventRoutes from './routes/events.js';
 import planningRoutes from './routes/planning.js';
 import aiRoutes from './routes/ai.js';
 import ideaRoutes from './routes/ideas.js';
+import exportRoutes from './routes/export.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { deploymentGuard } from './middleware/deploymentGuard.js';
 import { resolveIdentity } from './middleware/auth.js';
@@ -43,6 +44,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api', planningRoutes);
 app.use('/api', aiRoutes);
 app.use('/api', ideaRoutes);
+app.use('/api', exportRoutes);
 
 // Health check
 app.get('/api/health', (_req: Request, res: Response) => {

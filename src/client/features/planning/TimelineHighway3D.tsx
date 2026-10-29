@@ -25,6 +25,7 @@ export default function TimelineHighway3D({
   busy = false,
 }: TimelineHighway3DProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
   const handleToggle = (item: TimelineItem, e: React.MouseEvent) => {
     if (item.status !== 'completed') {
@@ -114,8 +115,8 @@ export default function TimelineHighway3D({
                 {/* 3D Tilted Milestone Card */}
                 <div className={`w-full md:max-w-md ${isLeft ? 'md:mr-16' : 'md:ml-16'}`}>
                   <Tilt3DCard
-                    intensity={10}
-                    glare={true}
+                    intensity={prefersReducedMotion ? 0 : 10}
+                    glare={!prefersReducedMotion}
                     className={`rounded-2xl border transition-all duration-300 ${
                       isCompleted
                         ? 'bg-surface-900/80 border-emerald-500/30 shadow-lg shadow-emerald-950/20'

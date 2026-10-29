@@ -194,3 +194,13 @@ export const ideasApi = {
   save: (eventId: string, ideaId: string) => request<Idea>(`/events/${eventId}/ideas/${ideaId}`, { method: 'PATCH', body: JSON.stringify({ status: 'saved' }) }),
   remove: (eventId: string, ideaId: string) => request<Idea>(`/events/${eventId}/ideas/${ideaId}`, { method: 'PATCH', body: JSON.stringify({ status: 'dismissed' }) }),
 };
+
+/** Calendar & PDF document export endpoints */
+export const exportApi = {
+  downloadIcs: (eventId: string) => {
+    window.open(`/api/events/${eventId}/export/ics`, '_blank');
+  },
+  downloadPdf: (eventId: string) => {
+    window.open(`/api/events/${eventId}/export/pdf`, '_blank');
+  },
+};

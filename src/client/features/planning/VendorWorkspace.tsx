@@ -8,7 +8,7 @@ import type { Event } from '../../../shared/types/event';
 import Tilt3DCard from '../../shared/components/Tilt3DCard';
 import { fireConfetti } from '../../shared/utils/confettiBurst';
 import { planningApi } from '../../shared/api/client';
-import { WorkspaceLayout, RecordList } from './WorkspaceComponents';
+import { WorkspaceLayout, RecordList, PresetChips, FormError, CategoryFilterPills } from './WorkspaceComponents';
 
 const VENDOR_PRESET_CATEGORIES = ['Venue', 'Food & Drinks', 'Photo/Video', 'Entertainment', 'Florals & Decor', 'Rentals'];
 
@@ -144,28 +144,15 @@ export default function VendorWorkspace({ eventId, event, vendors, onChanged }: 
       {/* Add / Edit Form */}
       <Card>
         <h3 className="text-sm font-semibold text-surface-200 mb-3">{editing ? 'Edit Vendor' : 'Add New Vendor'}</h3>
-        {error && <p className="form-error mb-3" role="alert">{error}</p>}
+        <FormError error={error} />
 
         {/* Quick Category Chips */}
-        <div className="mb-4">
-          <p className="text-xs text-surface-400 mb-2">Quick Vendor Categories:</p>
-          <div className="flex flex-wrap gap-1.5">
-            {VENDOR_PRESET_CATEGORIES.map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                onClick={() => setCategory(preset)}
-                className={`rounded-full px-2.5 py-1 text-xs transition-colors ${
-                  category === preset
-                    ? 'bg-brand-500 text-white'
-                    : 'bg-white/5 text-surface-300 hover:bg-white/10'
-                }`}
-              >
-                {preset}
-              </button>
-            ))}
-          </div>
-        </div>
+        <PresetChips
+          label="Quick Vendor Categories:"
+          presets={VENDOR_PRESET_CATEGORIES}
+          selected={category}
+          onSelect={(preset) => setCategory(preset)}
+        />
 
         <form className="form-grid" onSubmit={save}>
           <Input label="Category" required value={category} onChange={(eventInput) => setCategory(eventInput.target.value)} placeholder="Venue, Catering, Photo/Video..." />
@@ -195,22 +182,11 @@ export default function VendorWorkspace({ eventId, event, vendors, onChanged }: 
           <h3 className="text-sm font-semibold text-surface-200">
             Vendors ({filteredVendors.length})
           </h3>
-          <div className="flex flex-wrap gap-1.5">
-            {allCategories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
-                  selectedCategory === cat
-                    ? 'bg-brand-500 text-white shadow-sm'
-                    : 'bg-white/5 text-surface-400 hover:text-surface-200 hover:bg-white/10'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+          <CategoryFilterPills
+            categories={allCategories}
+            selected={selectedCategory}
+            onSelect={(cat) => setSelectedCategory(cat)}
+          />
         </div>
 
         <RecordList

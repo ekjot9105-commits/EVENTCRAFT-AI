@@ -8,7 +8,7 @@ import Tilt3DCard from '../../shared/components/Tilt3DCard';
 import Budget3DDonut from '../../shared/components/Budget3DDonut';
 import { fireConfetti } from '../../shared/utils/confettiBurst';
 import { planningApi } from '../../shared/api/client';
-import { WorkspaceLayout, RecordList } from './WorkspaceComponents';
+import { WorkspaceLayout, RecordList, PresetChips, FormError, CategoryFilterPills } from './WorkspaceComponents';
 
 const BUDGET_PRESET_CATEGORIES = ['Venue', 'Catering', 'Decor', 'Media', 'Permits', 'Entertainment', 'Transport'];
 
@@ -223,28 +223,15 @@ export default function BudgetWorkspace({ eventId, event, items, onChanged }: Bu
       {/* Add / Edit Form */}
       <Card>
         <h3 className="text-sm font-semibold text-surface-200 mb-3">{editing ? 'Edit Expense' : 'Add New Expense'}</h3>
-        {error && <p className="form-error mb-3" role="alert">{error}</p>}
+        <FormError error={error} />
         
         {/* Preset Category Chips */}
-        <div className="mb-4">
-          <p className="text-xs text-surface-400 mb-2">Quick Categories:</p>
-          <div className="flex flex-wrap gap-1.5">
-            {BUDGET_PRESET_CATEGORIES.map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                onClick={() => setCategory(preset)}
-                className={`rounded-full px-2.5 py-1 text-xs transition-colors ${
-                  category === preset
-                    ? 'bg-brand-500 text-white'
-                    : 'bg-white/5 text-surface-300 hover:bg-white/10'
-                }`}
-              >
-                {preset}
-              </button>
-            ))}
-          </div>
-        </div>
+        <PresetChips
+          label="Quick Categories:"
+          presets={BUDGET_PRESET_CATEGORIES}
+          selected={category}
+          onSelect={(preset) => setCategory(preset)}
+        />
 
         <form className="form-grid" onSubmit={save}>
           <Input label="Category" required value={category} onChange={(event) => setCategory(event.target.value)} placeholder="Venue, Catering, Decor..." />
@@ -264,23 +251,11 @@ export default function BudgetWorkspace({ eventId, event, items, onChanged }: Bu
           <h3 className="text-sm font-semibold text-surface-200">
             Expenses List ({filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'})
           </h3>
-          {/* Category Filter Pills */}
-          <div className="flex flex-wrap gap-1.5">
-            {allCategories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
-                  selectedCategory === cat
-                    ? 'bg-brand-500 text-white shadow-sm'
-                    : 'bg-white/5 text-surface-400 hover:text-surface-200 hover:bg-white/10'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+          <CategoryFilterPills
+            categories={allCategories}
+            selected={selectedCategory}
+            onSelect={(cat) => setSelectedCategory(cat)}
+          />
         </div>
 
         <RecordList

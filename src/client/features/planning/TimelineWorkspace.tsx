@@ -5,9 +5,10 @@ import Input from '../../shared/components/Input';
 import type { TimelineItem } from '../../../shared/types/timeline';
 import type { Event } from '../../../shared/types/event';
 import TimelineHighway3D from './TimelineHighway3D';
+import TimelineGanttTable from './TimelineGanttTable';
 import { fireConfetti } from '../../shared/utils/confettiBurst';
 import { planningApi } from '../../shared/api/client';
-import { WorkspaceLayout, RecordList } from './WorkspaceComponents';
+import { WorkspaceLayout, RecordList, FormError } from './WorkspaceComponents';
 
 interface TimelineWorkspaceProps {
   eventId: string;
@@ -22,8 +23,13 @@ export default function TimelineWorkspace({ eventId, event, items, onChanged }: 
   const [editing, setEditing] = useState<TimelineItem | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [prefersReducedMotion] = useState(() => 
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
   const [urgencyFilter, setUrgencyFilter] = useState<'All' | 'Overdue' | 'Due this week' | 'Upcoming' | 'Completed'>('All');
-  const [viewMode, setViewMode] = useState<'3d-highway' | 'milestones' | 'run-of-show'>('3d-highway');
+  const [viewMode, setViewMode] = useState<'3d-highway' | 'milestones' | 'run-of-show' | 'gantt-table'>(() =>
+    prefersReducedMotion ? 'gantt-table' : '3d-highway'
+  );
 
   const today = useMemo(() => {
     const d = new Date();
@@ -152,7 +158,7 @@ export default function TimelineWorkspace({ eventId, event, items, onChanged }: 
 
   return (
     <WorkspaceLayout title="Timeline workspace" description="Create, edit, complete, and organize milestones and day-of schedules.">
-      {/* View Mode Toggle: 3D Highway vs Milestones vs Day-Of Run-of-Show */}
+      {/* View Mode Toggle: 3D Highway vs Milestones vs Day-Of Run-of-Show vs Accessible Gantt */}
       <div className="flex flex-wrap gap-2 border-b border-white/10 pb-3">
         <button
           type="button"
@@ -164,6 +170,18 @@ export default function TimelineWorkspace({ eventId, event, items, onChanged }: 
           }`}
         >
           <span>🛣️</span> 3D Spatial Highway
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewMode('gantt-table')}
+          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+            viewMode === 'gantt-table'
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/30 ring-1 ring-white/20'
+              : 'text-surface-400 hover:text-surface-200 hover:bg-white/5'
+          }`}
+          title="Accessible 2D high-contrast Gantt table for screen readers and reduced motion"
+        >
+          <span>📊</span> Accessible 2D Gantt
         </button>
         <button
           type="button"
@@ -231,7 +249,7 @@ export default function TimelineWorkspace({ eventId, event, items, onChanged }: 
         <h3 className="text-sm font-semibold text-surface-200 mb-3">
           {editing ? 'Edit Milestone' : viewMode === 'run-of-show' ? 'Add Day-Of Schedule Item' : 'Add Milestone'}
         </h3>
-        {error && <p className="form-error mb-3" role="alert">{error}</p>}
+        <FormError error={error} />
         <form className="form-grid" onSubmit={save}>
           <Input
             label={viewMode === 'run-of-show' ? 'Hour & Activity' : 'Task or milestone'}
@@ -283,6 +301,14 @@ export default function TimelineWorkspace({ eventId, event, items, onChanged }: 
 
         {viewMode === '3d-highway' ? (
           <TimelineHighway3D
+            items={filteredItems}
+            onToggle={toggle}
+            onEdit={edit}
+            onRemove={remove}
+            busy={busy}
+          />
+        ) : viewMode === 'gantt-table' ? (
+          <TimelineGanttTable
             items={filteredItems}
             onToggle={toggle}
             onEdit={edit}
