@@ -67,7 +67,7 @@ export function PresetChips({ label, presets, selected, onSelect }: PresetChipsP
             onClick={() => onSelect(preset)}
             className={`rounded-full px-2.5 py-1 text-xs transition-colors ${
               selected === preset
-                ? 'bg-brand-500 text-white'
+                ? 'bg-brand-700 text-white'
                 : 'bg-white/5 text-surface-300 hover:bg-white/10'
             }`}
           >
@@ -107,7 +107,7 @@ export function CategoryFilterPills({ categories, selected, onSelect }: Category
           onClick={() => onSelect(cat)}
           className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
             selected === cat
-              ? 'bg-brand-500 text-white shadow-sm'
+              ? 'bg-brand-700 text-white shadow-sm'
               : 'bg-white/5 text-surface-400 hover:text-surface-200 hover:bg-white/10'
           }`}
         >

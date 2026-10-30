@@ -8,6 +8,7 @@ import Tilt3DCard from '../../shared/components/Tilt3DCard';
 import Budget3DDonut from '../../shared/components/Budget3DDonut';
 import { fireConfetti } from '../../shared/utils/confettiBurst';
 import { planningApi } from '../../shared/api/client';
+import { formatMoney } from '../../shared/utils/formatMoney';
 import { WorkspaceLayout, RecordList, PresetChips, FormError, CategoryFilterPills } from './WorkspaceComponents';
 
 const BUDGET_PRESET_CATEGORIES = ['Venue', 'Catering', 'Decor', 'Media', 'Permits', 'Entertainment', 'Transport'];
@@ -20,6 +21,7 @@ interface BudgetWorkspaceProps {
 }
 
 export default function BudgetWorkspace({ eventId, event, items, onChanged }: BudgetWorkspaceProps) {
+  const currency = event?.currency ?? 'USD';
   const [category, setCategory] = useState('');
   const [name, setName] = useState('');
   const [estimated, setEstimated] = useState('');
@@ -153,7 +155,7 @@ export default function BudgetWorkspace({ eventId, event, items, onChanged }: Bu
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-medium text-surface-300">
                 <span>Spending Progress ({percentSpent}%)</span>
-                <span>{remaining >= 0 ? `$${remaining.toLocaleString()} Remaining` : `$${Math.abs(remaining).toLocaleString()} Over`}</span>
+                <span>{remaining >= 0 ? `${formatMoney(remaining, currency)} Remaining` : `${formatMoney(Math.abs(remaining), currency)} Over`}</span>
               </div>
               <div className="h-3 w-full overflow-hidden rounded-full bg-white/10 p-0.5">
                 <div
@@ -170,7 +172,7 @@ export default function BudgetWorkspace({ eventId, event, items, onChanged }: Bu
             <Budget3DDonut
               items={items}
               totalBudget={totalEventBudget}
-              currency={event?.currency}
+              currency={currency}
             />
           </div>
         </div>
@@ -236,8 +238,8 @@ export default function BudgetWorkspace({ eventId, event, items, onChanged }: Bu
         <form className="form-grid" onSubmit={save}>
           <Input label="Category" required value={category} onChange={(event) => setCategory(event.target.value)} placeholder="Venue, Catering, Decor..." />
           <Input label="Item name" required value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. Wedding Hall Deposit" />
-          <Input label="Estimated cost ($)" required type="number" min={0} step="0.01" value={estimated} onChange={(event) => setEstimated(event.target.value)} />
-          <Input label="Actual cost ($)" type="number" min={0} step="0.01" value={actual} onChange={(event) => setActual(event.target.value)} placeholder="Optional until paid" />
+          <Input label={`Estimated cost (${currency})`} required type="number" min={0} step="0.01" value={estimated} onChange={(event) => setEstimated(event.target.value)} />
+          <Input label={`Actual cost (${currency})`} type="number" min={0} step="0.01" value={actual} onChange={(event) => setActual(event.target.value)} placeholder="Optional until paid" />
           <div className="flex items-end gap-2">
             <Button type="submit" loading={busy}>{editing ? 'Save changes' : 'Add expense'}</Button>
             {editing && <Button type="button" variant="secondary" onClick={reset}>Cancel</Button>}
@@ -268,12 +270,12 @@ export default function BudgetWorkspace({ eventId, event, items, onChanged }: Bu
                 </span>
                 <strong className="text-surface-100">{item.name}</strong>
                 <span className="text-surface-400 ml-2">
-                  — ${item.estimated_cost.toFixed(2)} est.{item.actual_cost != null ? ` · $${item.actual_cost.toFixed(2)} actual` : ''}
+                  — {formatMoney(item.estimated_cost, currency)} est.{item.actual_cost != null ? ` · ${formatMoney(item.actual_cost, currency)} actual` : ''}
                 </span>
               </div>
               <span className="flex gap-2">
-                <Button size="sm" variant="secondary" onClick={() => edit(item)}>Edit</Button>
-                <Button size="sm" variant="danger" onClick={() => void remove(item)} disabled={busy}>Delete</Button>
+                <Button size="sm" variant="secondary" onClick={() => edit(item)} aria-label={`Edit ${item.name}`}>Edit</Button>
+                <Button size="sm" variant="danger" onClick={() => void remove(item)} disabled={busy} aria-label={`Delete ${item.name}`}>Delete</Button>
               </span>
             </li>
           ))}

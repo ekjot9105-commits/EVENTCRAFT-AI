@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { CopilotResponse } from './schemas.js';
 import { usesSqlite } from '../db/client.js';
-import { sqliteConsumeProposal, sqliteStoreProposal } from '../db/sqlite.js';
+import { sqliteConsumeProposal, sqliteStoreProposal, sqliteResetProposals } from '../db/sqlite.js';
 
 interface StoredProposal {
   eventId: string;
@@ -26,19 +26,22 @@ export function storeProposal(eventId: string, proposal: NonNullable<CopilotResp
 export function consumeProposal(id: string, eventId: string): StoredProposal | null {
   const memoryStored = proposals.get(id);
   proposals.delete(id);
-  if (memoryStored && memoryStored.eventId === eventId && memoryStored.expiresAt >= Date.now()) {
-    if (usesSqlite()) sqliteConsumeProposal(id, eventId);
-    return memoryStored;
-  }
-  if (usesSqlite()) {
-    const sqliteRow = sqliteConsumeProposal(id, eventId);
-    if (sqliteRow && sqliteRow.expiresAt >= Date.now()) {
-      return { eventId, proposal: sqliteRow.proposal as NonNullable<CopilotResponse['proposal']>, expiresAt: sqliteRow.expiresAt };
+  const sqliteRow = usesSqlite() ? sqliteConsumeProposal(id, eventId) : null;
+  if (memoryStored) {
+    if (memoryStored.eventId === eventId && memoryStored.expiresAt >= Date.now()) {
+      return memoryStored;
     }
+    return null;
+  }
+  if (sqliteRow && sqliteRow.expiresAt >= Date.now()) {
+    return { eventId, proposal: sqliteRow.proposal as NonNullable<CopilotResponse['proposal']>, expiresAt: sqliteRow.expiresAt };
   }
   return null;
 }
 
 export function resetProposalStore(): void {
   proposals.clear();
+  if (usesSqlite()) {
+    sqliteResetProposals();
+  }
 }

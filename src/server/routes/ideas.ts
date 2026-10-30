@@ -8,6 +8,8 @@ import { validateBody } from '../middleware/validate.js';
 import { notFound } from '../middleware/errorHandler.js';
 import { parseResourceId } from '../utils/resourceId.js';
 import { ideaService } from '../services/ideaService.js';
+import { aiRateLimit } from '../middleware/aiRateLimit.js';
+import { aiService } from '../ai/aiService.js';
 import { requireEventOwnership } from '../middleware/eventOwnership.js';
 
 const router = Router();
@@ -48,6 +50,17 @@ router.post('/events/:eventId/ideas', validateBody(createIdeaSchema), async (req
   try {
     const idea = await ideaService.create(eventId(req), req.body);
     res.status(201).json(idea);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /api/events/:eventId/ideas/generate — Directly generate and persist event-specific ideas
+ */
+router.post('/events/:eventId/ideas/generate', aiRateLimit, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    res.status(201).json(await aiService.generateIdeas(eventId(req)));
   } catch (error) {
     next(error);
   }

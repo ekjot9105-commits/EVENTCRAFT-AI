@@ -8,11 +8,11 @@ import { aiService } from '../ai/aiService.js';
 import { validateBody } from '../middleware/validate.js';
 import { aiRateLimit } from '../middleware/aiRateLimit.js';
 import { parseResourceId } from '../utils/resourceId.js';
-import { planningService } from '../services/planningService.js';
-import { createBudgetItemSchema, updateBudgetItemSchema } from '../../shared/schemas/planning.schema.js';
 import { consumeProposal, storeProposal } from '../ai/proposalStore.js';
+import { applyProposal } from '../ai/proposalApplier.js';
 import { getAiProviderStatus } from '../ai/provider.js';
 import { requireEventOwnership } from '../middleware/eventOwnership.js';
+import type { Event } from '../../shared/types/event.js';
 
 const router = Router();
 router.use('/events/:eventId', requireEventOwnership);
@@ -106,29 +106,8 @@ router.post('/events/:eventId/ai/copilot/confirm', validateBody(proposalSchema),
     const id = eventId(req);
     const stored = consumeProposal(req.body.proposal_id, id);
     if (!stored) return res.status(409).json({ error: 'The proposal is expired, already used, or belongs to another event.' });
-    const proposal = stored.proposal;
-    if (proposal.action === 'update_budget' && proposal.target_id) {
-      const currentItems = await planningService.listBudgetItems(id);
-      const currentItem = currentItems.find((item) => item.id === proposal.target_id);
-      if (!currentItem || (proposal.current_value && Object.entries(proposal.current_value).some(([key, value]) => currentItem[key as keyof typeof currentItem] !== value))) {
-        return res.status(409).json({ error: 'The proposal is stale or the item no longer exists.' });
-      }
-      const parsed = updateBudgetItemSchema.safeParse(proposal.proposed_value);
-      if (!parsed.success) return res.status(400).json({ error: 'The proposed budget update is invalid.' });
-      const current = await planningService.updateBudgetItem(id, proposal.target_id, {
-        ...parsed.data,
-        notes: parsed.data.notes ?? undefined,
-      });
-      if (!current) return res.status(409).json({ error: 'The proposal is stale or the item no longer exists.' });
-      return res.json({ status: 'applied', item: current });
-    }
-    if (proposal.action === 'add_budget') {
-      const parsed = createBudgetItemSchema.safeParse(proposal.proposed_value);
-      if (!parsed.success) return res.status(400).json({ error: 'The proposed budget item is invalid.' });
-      const item = await planningService.createBudgetItem(id, parsed.data);
-      return res.status(201).json({ status: 'applied', item });
-    }
-    return res.status(400).json({ error: 'This proposal type is not yet supported for confirmation.' });
+    const applied = await applyProposal(res.locals['event'] as Event, stored.proposal);
+    return res.status(applied.httpStatus).json(applied.body);
   } catch (error) {
     next(error);
   }

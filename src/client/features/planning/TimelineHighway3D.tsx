@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { TimelineItem } from '../../../shared/types/timeline';
 import Tilt3DCard from '../../shared/components/Tilt3DCard';
 import { fireConfetti } from '../../shared/utils/confettiBurst';
+import { prefersReducedMotion } from '../../shared/utils/motion';
 
 interface TimelineHighway3DProps {
   items: TimelineItem[];
@@ -25,7 +26,7 @@ export default function TimelineHighway3D({
   busy = false,
 }: TimelineHighway3DProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const reduceMotion = prefersReducedMotion();
 
   const handleToggle = (item: TimelineItem, e: React.MouseEvent) => {
     if (item.status !== 'completed') {
@@ -90,7 +91,7 @@ export default function TimelineHighway3D({
                       isCompleted
                         ? 'bg-emerald-500 text-white shadow-emerald-500/50 ring-4 ring-emerald-500/20'
                         : isHovered
-                        ? 'bg-brand-500 text-white shadow-brand-500/60 ring-4 ring-brand-500/30'
+                        ? 'bg-brand-700 text-white shadow-brand-500/60 ring-4 ring-brand-500/30'
                         : 'bg-surface-800 text-surface-300 border-2 border-white/20'
                     }`}
                   >
@@ -115,8 +116,8 @@ export default function TimelineHighway3D({
                 {/* 3D Tilted Milestone Card */}
                 <div className={`w-full md:max-w-md ${isLeft ? 'md:mr-16' : 'md:ml-16'}`}>
                   <Tilt3DCard
-                    intensity={prefersReducedMotion ? 0 : 10}
-                    glare={!prefersReducedMotion}
+                    intensity={reduceMotion ? 0 : 10}
+                    glare={!reduceMotion}
                     className={`rounded-2xl border transition-all duration-300 ${
                       isCompleted
                         ? 'bg-surface-900/80 border-emerald-500/30 shadow-lg shadow-emerald-950/20'

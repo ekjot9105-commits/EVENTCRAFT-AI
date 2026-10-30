@@ -67,7 +67,7 @@ export default function EventDetail() {
       <Card className="text-center py-12">
         <p className="text-red-400 mb-2">Event not found</p>
         <p className="text-surface-500 text-sm mb-4">{error || 'This event does not exist.'}</p>
-        <Link to="/" className="text-brand-400 hover:text-brand-300 text-sm">← Back to events</Link>
+        <Link to="/dashboard" className="text-brand-400 hover:text-brand-300 text-sm">← Back to events</Link>
       </Card>
     );
   }
@@ -141,38 +141,38 @@ function OverviewTab({ event }: { event: Event }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <Card>
-        <h3 className="text-sm font-medium text-surface-400 mb-1">Type</h3>
+        <h2 className="text-sm font-medium text-surface-400 mb-1">Type</h2>
         <p className="text-lg font-display font-semibold text-surface-100">
           {EVENT_TYPE_ICONS[event.type]} {EVENT_TYPE_LABELS[event.type]}
         </p>
       </Card>
       <Card>
-        <h3 className="text-sm font-medium text-surface-400 mb-1">Budget</h3>
+        <h2 className="text-sm font-medium text-surface-400 mb-1">Budget</h2>
         <p className="text-lg font-display font-semibold text-surface-100">
           {event.budget_amount > 0 ? event.budget_amount.toLocaleString(undefined, { style: 'currency', currency: event.currency }) : 'Not set'}
         </p>
         <p className="mt-1 text-xs text-surface-500">Actual spending is shown in the Budget workspace.</p>
       </Card>
       <Card>
-        <h3 className="text-sm font-medium text-surface-400 mb-1">Date</h3>
+        <h2 className="text-sm font-medium text-surface-400 mb-1">Date</h2>
         <p className="text-lg font-display font-semibold text-surface-100">
           {event.date ? new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Not set'}
         </p>
       </Card>
       <Card>
-        <h3 className="text-sm font-medium text-surface-400 mb-1">Guests</h3>
+        <h2 className="text-sm font-medium text-surface-400 mb-1">Guests</h2>
         <p className="text-lg font-display font-semibold text-surface-100">
           {event.guest_count ? `${event.guest_count.toLocaleString()} expected` : 'Not set'}
         </p>
       </Card>
       <Card>
-        <h3 className="text-sm font-medium text-surface-400 mb-1">Location</h3>
+        <h2 className="text-sm font-medium text-surface-400 mb-1">Location</h2>
         <p className="text-lg font-display font-semibold text-surface-100">
           {event.location || 'Not set'}
         </p>
       </Card>
       <Card className="sm:col-span-2">
-        <h3 className="text-sm font-medium text-surface-400 mb-1">Description</h3>
+        <h2 className="text-sm font-medium text-surface-400 mb-1">Description</h2>
         <p className="text-surface-200">
           {event.description || 'No description provided.'}
         </p>

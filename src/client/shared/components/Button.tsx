@@ -11,7 +11,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 // These classes define the product's action hierarchy without duplicating styles.
 const variants = {
   primary:
-    'bg-brand-600 hover:bg-brand-500 text-white shadow-lg shadow-brand-600/20 hover:shadow-brand-500/30',
+    'bg-brand-700 hover:bg-brand-800 text-white shadow-lg shadow-brand-600/20 hover:shadow-brand-500/30',
   secondary:
     'bg-white/10 hover:bg-white/15 text-surface-200 border border-white/10',
   danger:

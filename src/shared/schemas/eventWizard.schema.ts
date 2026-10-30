@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EVENT_TYPES } from '../constants/eventTypes.js';
+import { SUPPORTED_CURRENCIES } from '../constants/currencies.js';
 
 /** Validates the draft collected by the Phase 1 event planning wizard. */
 export const eventWizardSchema = z.object({
@@ -10,7 +11,7 @@ export const eventWizardSchema = z.object({
   location: z.string().trim().max(500, 'Location must be 500 characters or fewer'),
   guestCount: z.number({ message: 'Guest count must be a number' }).int('Guest count must be a whole number').min(1, 'Guest count must be at least 1').max(100000, 'Guest count must be 100,000 or fewer'),
   budgetAmount: z.number({ message: 'Budget must be a number' }).min(0, 'Budget cannot be negative').max(100000000, 'Budget is too large'),
-  currency: z.enum(['USD', 'CAD', 'GBP', 'EUR', 'AUD']),
+  currency: z.enum(SUPPORTED_CURRENCIES),
   priorities: z.string().trim().max(500, 'Priorities must be 500 characters or fewer'),
   flexibility: z.enum(['fixed', 'some-flexibility', 'flexible']),
   style: z.string().trim().max(500, 'Style must be 500 characters or fewer'),

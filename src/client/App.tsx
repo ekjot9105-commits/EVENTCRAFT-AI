@@ -31,7 +31,7 @@ export default function App() {
           <Route path="/events/:id/vendors" element={<PlanningWorkspace kind="vendors" />} />
           <Route path="/events/:id/ideas" element={<IdeasWorkspace />} />
           <Route path="/events/:id/assistant" element={<AICopilot />} />
-          <Route path="/events/:id/overview" element={<Navigate to=".." replace />} />
+          <Route path="/events/:id/overview" element={<Navigate to=".." relative="path" replace />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

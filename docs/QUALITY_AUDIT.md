@@ -11,7 +11,7 @@ The audit reviewed the Phase 1–4 React/Express/Supabase modular monolith, shar
 | HIGH | Event, planning, ideas, and AI routes have no authentication or ownership boundary. | Any reachable caller can read or mutate another event. | Mitigated at deployment boundary: production API access is now denied unless `AUTH_ENABLED=true`; real identity, ownership, and RLS remain required before enabling it. | Deployment guard, type-check, tests, build |
 | HIGH | Copilot confirmation previously accepted client-supplied mutation values. | A caller could bypass model approval and submit arbitrary budget changes. | Fixed with a server-issued, event-bound, expiring proposal ID and current-value compare-and-swap validation. | Proposal route tests/checks and type/build verification |
 | MEDIUM | Alignment documentation described Phase 3–4 features as absent. | Reviewers could not map implemented behavior to the problem statement. | Updated status and implementation documentation. | Documentation diff inspection |
-| MEDIUM | Coverage script was configured without `@vitest/coverage-v8`. | Reproducible coverage evidence was unavailable. | Added the configured provider dependency. | `npm run test:coverage` now runs; latest verified total is 16.95% statements, 18.16% branches, 16.88% functions, 20.31% lines. |
+| MEDIUM | Coverage script was configured without `@vitest/coverage-v8`. | Reproducible coverage evidence was unavailable. | Added the configured provider dependency. | `npm run test:coverage` runs in CI with enforced thresholds; latest verified total is 82.96% statements, 68.66% branches, 81.13% functions, 85.10% lines. |
 | MEDIUM | Planning UI was create-only and swallowed recoverable workflow failures. | Users could not edit persisted records or reliably recover from save errors. | Added edit/delete/status controls, validation, retry states, and loading guards. | Type-check, lint, build, regression suite |
 | LOW | Three lint warnings remain in existing Toast fast-refresh export and server startup logging. | No functional failure; code-quality noise remains. | Documented for later cleanup without suppressing the rules. | `npm run lint` |
 
@@ -26,7 +26,27 @@ The audit reviewed the Phase 1–4 React/Express/Supabase modular monolith, shar
 
 ## Dependency audit
 
-`npm audit --omit=dev` reports two moderate React Router advisories. The available remediation requires a breaking React Router 7 upgrade, so it was not applied automatically during this audit. The application does not use SSR hydration; the open redirect advisory still requires a planned dependency upgrade and navigation regression pass.
+React Router was upgraded to 7.18.5, which resolves both moderate advisories (GHSA-wrjc-x8rr-h8h6, GHSA-337j-9hxr-rhxg). `npm audit` now reports 0 vulnerabilities, and CI fails on any moderate-or-higher production advisory.
+
+## Scorecard hardening pass
+
+| Area | Change |
+|---|---|
+| Testing | Per-worker SQLite files remove the `database is locked` failure under `--coverage`; 136 new tests (244 total) cover provider adapters and fallbacks, security middleware, the proposal applier, the API client, shared components, and every routed page; coverage thresholds enforced in CI. |
+| Accessibility | axe-core scans every routed page in CI; fixed skipped heading levels, broken skip link on the landing page, duplicate modal title IDs, toast roles, `aria-current`/`aria-controls` in navigation, unlabeled AI orb canvas, and reduced-motion support for all canvas/confetti animation. |
+| Security | AI rate limit is now per session *and* per IP (rotating `x-anon-id` no longer bypasses it), memory-bounded, and sends `Retry-After`; session IDs and request IDs are format-validated; session cookie is `Secure` in production; `trust proxy` on Vercel; inline boot script moved to a CSP-compatible file. |
+| Code quality | `provider.ts` split into per-adapter modules with one JSON parser and one provider resolver; Copilot confirmation rewritten as a table-driven applier that applies the same schema, stale-value, and schedule rules to every action; expected failures in the AI service return 4xx/502 instead of 500. |
+| Alignment | Copilot savings advice uses the event's own currency; Gemini honours `GEMINI_MODEL` instead of silently downgrading it. |
+
+### Second pass
+
+| Area | Change |
+|---|---|
+| Code quality | API routers mounted once under `/api` (the Vercel entry restores a stripped prefix); providers receive the trusted event as structured context instead of re-parsing prompt text; `AICopilot`, `TimelineWorkspace`, `CelebrationHeroCanvas`, and `Budget3DDonut` split into focused components and pure, unit-tested modules; one shared currency list. |
+| Efficiency | Applying a plan writes each section as one batch (a single SQLite transaction or one Supabase request per table) in parallel; plan and item lookups use primary keys instead of listing; prepared SQLite statements are cached; planning saves refresh only the affected records instead of remounting the workspace and re-fetching the event. |
+| Security | Generated ideas are now schema-validated like every other model output; invalid model output returns 502 instead of 500; SQLite writes use a per-table column allowlist. |
+| Accessibility | White-on-brand controls darkened to ≥ 4.98:1 contrast (WCAG AA); view and filter toggles expose `aria-pressed`; row actions name their item; Copilot replies are announced through a live region; saves no longer reset the chosen view or keyboard focus. |
+| Alignment | INR budgets supported end to end (API, wizard, Supabase migration `005`); budget and plan screens show the event's own currency; events with no budget can still generate a plan. |
 
 ## Verification
 
@@ -41,4 +61,4 @@ npm run test:coverage
 git diff --check
 ```
 
-The final report records the actual results and remaining warnings. The latest coverage run reports 16.95% statements, 18.16% branches, 16.88% functions, and 20.31% lines across the configured source scope.
+The final report records the actual results and remaining warnings. The latest coverage run reports 82.96% statements, 68.66% branches, 81.13% functions, and 85.10% lines across the configured source scope.

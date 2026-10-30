@@ -32,7 +32,7 @@ export default function LandingPage() {
         <Link to="/events/new" className="header-action">Start planning <Icon name="arrow-right" className="h-4 w-4" /></Link>
       </header>
 
-      <main>
+      <main id="main-content">
         <section className="landing-hero relative overflow-hidden">
           <CelebrationHeroCanvas className="absolute inset-0 pointer-events-none z-0 opacity-80" />
           <div className="landing-orb landing-orb-one" aria-hidden="true" />

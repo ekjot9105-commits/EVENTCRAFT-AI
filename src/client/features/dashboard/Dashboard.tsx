@@ -76,7 +76,7 @@ export default function Dashboard() {
           <p className="text-surface-500 mb-6">Create your first event to get started with AI-powered planning.</p>
           <Link
             to="/events/new"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-medium transition-all hover:shadow-lg hover:shadow-brand-600/25"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-medium transition-all hover:shadow-lg hover:shadow-brand-600/25"
           >
             <span aria-hidden="true">✨</span>
             Create Your First Event

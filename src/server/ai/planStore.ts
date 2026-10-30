@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { GeneratedPlan } from './schemas.js';
 import { usesSqlite } from '../db/client.js';
-import { sqliteListPlans, sqliteMarkPlanApplied, sqliteStorePlan } from '../db/sqlite.js';
+import { sqliteGetPlan, sqliteListPlans, sqliteMarkPlanApplied, sqliteStorePlan } from '../db/sqlite.js';
 
 export interface StoredPlan {
   plan_id: string;
@@ -36,7 +36,7 @@ export function listPlans(eventId: string): StoredPlan[] {
 
 export function getPlan(eventId: string, planId: string): StoredPlan | null {
   if (usesSqlite()) {
-    return listPlans(eventId).find((stored) => stored.plan_id === planId) ?? null;
+    return sqliteGetPlan(eventId, planId) as StoredPlan | null;
   }
   const stored = plans.get(planId);
   return stored?.event_id === eventId ? stored : null;

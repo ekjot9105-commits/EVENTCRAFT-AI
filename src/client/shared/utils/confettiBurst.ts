@@ -1,3 +1,5 @@
+import { prefersReducedMotion } from './motion';
+
 /**
  * Physics-based particle and confetti burst engine.
  * Zero external dependencies. Spawns high-velocity 3D tumbling confetti,
@@ -25,6 +27,8 @@ const PALETTES = [
 ];
 
 export function fireConfetti(originX?: number, originY?: number, count = 70): void {
+  // Celebration is decorative; skip it entirely for users who prefer reduced motion.
+  if (prefersReducedMotion()) return;
   const canvas = document.createElement('canvas');
   canvas.style.position = 'fixed';
   canvas.style.inset = '0';
