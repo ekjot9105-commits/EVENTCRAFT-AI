@@ -36,10 +36,13 @@ export interface UpdateBudgetItemPayload {
 }
 
 export interface BudgetSummary {
-  total_estimated: number;
-  total_actual: number;
-  total_paid: number;
-  total_remaining: number;
+  planned_budget: number;
+  planned_spending: number;
+  actual_spending: number;
+  paid_amount: number;
+  remaining_budget: number;
+  usage_percentage: number;
+  over_budget: boolean;
   category_totals: Record<string, { estimated: number; actual: number }>;
   item_count: number;
 }

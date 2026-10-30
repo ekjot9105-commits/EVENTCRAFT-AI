@@ -15,9 +15,9 @@ const router = Router();
 /**
  * GET /api/events — List all events
  */
-router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
+router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const events = await eventService.list(ownerId(_req));
+    const events = await eventService.list(ownerId(req));
     res.json(events);
   } catch (err) {
     next(err);
@@ -81,7 +81,11 @@ router.patch(
  */
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await eventService.delete(parseResourceId(String(req.params['id'])), ownerId(req));
+    const id = parseResourceId(String(req.params['id']));
+    const deleted = await eventService.delete(id, ownerId(req));
+    if (!deleted) {
+      throw notFound('Event', id);
+    }
     res.status(204).send();
   } catch (err) {
     next(err);

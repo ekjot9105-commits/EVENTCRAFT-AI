@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -10,6 +10,8 @@ interface ModalProps {
 export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  // Unique per instance so two dialogs never share an accessible-name target.
+  const titleId = useId();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -44,16 +46,16 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
       ref={dialogRef}
       className="fixed inset-0 z-50 m-auto max-w-lg w-full bg-surface-900 border border-white/10 rounded-2xl p-0 backdrop:bg-black/60 backdrop:backdrop-blur-sm animate-scale-in"
       onClick={handleBackdropClick}
-      aria-labelledby="modal-title"
-      aria-modal="true"
+      aria-labelledby={titleId}
       onCancel={handleCancel}
     >
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 id="modal-title" className="text-lg font-display font-semibold text-surface-100">
+          <h2 id={titleId} className="text-lg font-display font-semibold text-surface-100">
             {title}
           </h2>
           <button
+            type="button"
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-white/10 text-surface-400 hover:text-surface-200 transition-colors"
             aria-label="Close dialog"

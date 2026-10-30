@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { prefersReducedMotion } from '../utils/motion';
 
 export type AIOrbState = 'idle' | 'thinking' | 'answered';
 
@@ -69,6 +70,7 @@ export default function AIOrb({
       size: Math.random() * 2 + 1,
     }));
 
+    const reduceMotion = prefersReducedMotion();
     const render = () => {
       ctx.clearRect(0, 0, size, size);
 
@@ -169,7 +171,8 @@ export default function AIOrb({
         ctx.fill();
       }
 
-      animFrameRef.current = requestAnimationFrame(render);
+      // Reduced motion: keep the single static frame already drawn.
+      if (!reduceMotion) animFrameRef.current = requestAnimationFrame(render);
     };
 
     animFrameRef.current = requestAnimationFrame(render);
@@ -188,6 +191,7 @@ export default function AIOrb({
         ref={canvasRef}
         style={{ width: size, height: size }}
         className="pointer-events-none drop-shadow-2xl"
+        role="img"
         aria-label={`AI Energy Orb status: ${state}`}
       />
     </div>

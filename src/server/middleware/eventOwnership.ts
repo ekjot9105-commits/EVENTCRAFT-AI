@@ -12,6 +12,7 @@ export async function requireEventOwnership(req: Request, res: Response, next: N
       res.status(404).json({ error: 'Event not found.' });
       return;
     }
+    res.locals['event'] = event;
     next();
   } catch (error) {
     next(error);
