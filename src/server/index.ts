@@ -24,6 +24,12 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = parseInt(process.env['PORT'] || '3001', 10);
 
+// Behind Vercel's (or another single) reverse proxy, trust one hop so req.ip is the
+// real client address that the AI rate limiter keys on — not the proxy's.
+if (process.env['VERCEL'] || process.env['TRUST_PROXY'] === 'true') {
+  app.set('trust proxy', 1);
+}
+
 // ===========================================
 // Security & Parsing Middleware
 // ===========================================
@@ -31,20 +37,18 @@ app.use(helmet({
   contentSecurityPolicy: process.env['NODE_ENV'] === 'production' ? undefined : false,
 }));
 const allowedOrigins = process.env['CORS_ORIGINS']?.split(',').map((origin) => origin.trim()).filter(Boolean);
-app.use(cors({ origin: allowedOrigins && allowedOrigins.length > 0 ? allowedOrigins : true }));
+app.use(cors({
+  origin: allowedOrigins && allowedOrigins.length > 0 ? allowedOrigins : (process.env['NODE_ENV'] === 'production' ? false : true),
+  credentials: true,
+}));
 app.use(express.json({ limit: '1mb' }));
-app.use('/api', requestContext);
-app.use('/api', deploymentGuard);
-app.use('/api', resolveIdentity);
+app.use('/api', requestContext, deploymentGuard, resolveIdentity);
 
 // ===========================================
-// API Routes
+// API Routes (mounted once; the Vercel entry restores the /api prefix if a rewrite strips it)
 // ===========================================
 app.use('/api/events', eventRoutes);
-app.use('/api', planningRoutes);
-app.use('/api', aiRoutes);
-app.use('/api', ideaRoutes);
-app.use('/api', exportRoutes);
+app.use('/api', planningRoutes, aiRoutes, ideaRoutes, exportRoutes);
 
 // Health check
 app.get('/api/health', (_req: Request, res: Response) => {
@@ -52,9 +56,9 @@ app.get('/api/health', (_req: Request, res: Response) => {
 });
 
 // ===========================================
-// Static Files (Production)
+// Static Files (Production standalone mode)
 // ===========================================
-if (process.env['NODE_ENV'] === 'production') {
+if (process.env['NODE_ENV'] === 'production' && !process.env['VERCEL']) {
   const clientDist = path.join(__dirname, '../../client');
   app.use(express.static(clientDist));
 
@@ -70,11 +74,13 @@ if (process.env['NODE_ENV'] === 'production') {
 app.use(errorHandler);
 
 // ===========================================
-// Start Server
+// Start Server (only in standalone / non-serverless runtime)
 // ===========================================
-app.listen(PORT, () => {
-  process.stdout.write(`EventCraft AI server running on http://localhost:${PORT}\n`);
-  process.stdout.write(`Environment: ${process.env['NODE_ENV'] || 'development'}\n`);
-});
+if (!process.env['VERCEL'] && process.env['NODE_ENV'] !== 'test') {
+  app.listen(PORT, () => {
+    process.stdout.write(`EventCraft AI server running on http://localhost:${PORT}\n`);
+    process.stdout.write(`Environment: ${process.env['NODE_ENV'] || 'development'}\n`);
+  });
+}
 
 export default app;

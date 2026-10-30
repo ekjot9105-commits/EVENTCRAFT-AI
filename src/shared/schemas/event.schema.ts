@@ -4,6 +4,7 @@
 
 import { z } from 'zod';
 import { EVENT_TYPES } from '../constants/eventTypes.js';
+import { SUPPORTED_CURRENCIES } from '../constants/currencies.js';
 
 export const createEventSchema = z.object({
   type: z.enum(EVENT_TYPES),
@@ -13,7 +14,7 @@ export const createEventSchema = z.object({
   guest_count: z.number().int().min(1).max(100000).optional(),
   location: z.string().max(500).optional(),
   budget_amount: z.number().finite().min(0).max(100_000_000).optional(),
-  currency: z.enum(['USD', 'CAD', 'GBP', 'EUR', 'AUD']).optional(),
+  currency: z.enum(SUPPORTED_CURRENCIES).optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
@@ -24,7 +25,7 @@ export const updateEventSchema = z.object({
   guest_count: z.number().int().min(1).max(100000).optional().nullable(),
   location: z.string().max(500).optional().nullable(),
   budget_amount: z.number().finite().min(0).max(100_000_000).optional(),
-  currency: z.enum(['USD', 'CAD', 'GBP', 'EUR', 'AUD']).optional(),
+  currency: z.enum(SUPPORTED_CURRENCIES).optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 

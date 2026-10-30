@@ -15,14 +15,17 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/client/test/setup.ts'],
+    environment: 'node',
+    setupFiles: ['./tests/setup/isolateDatabase.ts', './src/client/test/setup.ts'],
+    testTimeout: 15000,
     include: ['src/**/*.test.{ts,tsx}', 'tests/**/*.test.{ts,tsx}'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json-summary'],
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/**/*.test.{ts,tsx}', 'src/client/test/**', 'src/**/*.d.ts'],
+      // Regression floor, not a target: raise it as coverage grows.
+      thresholds: { statements: 80, branches: 65, functions: 78, lines: 82 },
     },
   },
 });

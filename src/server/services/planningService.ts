@@ -1,6 +1,6 @@
 import { getSupabase } from '../db/client.js';
 import { usesSqlite } from '../db/client.js';
-import { sqliteInsert, sqliteList, sqliteRemove, sqliteUpdate } from '../db/sqlite.js';
+import { sqliteGet, sqliteInsert, sqliteList, sqliteRemove, sqliteTransaction, sqliteUpdate } from '../db/sqlite.js';
 import { calculateBudgetSummary } from '../utils/budgetCalculations.js';
 import type { BudgetItem, CreateBudgetItemPayload, UpdateBudgetItemPayload } from '../../shared/types/budget.js';
 import type { TimelineItem, CreateTimelineItemPayload, UpdateTimelineItemPayload } from '../../shared/types/timeline.js';
@@ -21,6 +21,15 @@ export class PlanningService {
   async listBudgetItems(eventId: string) { return this.list<BudgetItem>('budget_items', eventId); }
   async listTimelineItems(eventId: string) { return this.list<TimelineItem>('timeline_items', eventId); }
   async listVendors(eventId: string) { return this.list<Vendor>('vendors', eventId); }
+
+  async getBudgetItem(eventId: string, id: string) { return this.get<BudgetItem>('budget_items', eventId, id); }
+  async getTimelineItem(eventId: string, id: string) { return this.get<TimelineItem>('timeline_items', eventId, id); }
+  async getVendor(eventId: string, id: string) { return this.get<Vendor>('vendors', eventId, id); }
+
+  /** Bulk inserts used when applying an AI plan: one transaction or one round trip per table. */
+  async createBudgetItems(eventId: string, items: CreateBudgetItemPayload[]) { return this.insertMany<BudgetItem>('budget_items', eventId, items); }
+  async createTimelineItems(eventId: string, items: CreateTimelineItemPayload[]) { return this.insertMany<TimelineItem>('timeline_items', eventId, items); }
+  async createVendors(eventId: string, items: CreateVendorPayload[]) { return this.insertMany<Vendor>('vendors', eventId, items); }
 
   async createBudgetItem(eventId: string, data: CreateBudgetItemPayload) {
     return this.insert<BudgetItem>('budget_items', { ...data, event_id: eventId });
@@ -54,6 +63,23 @@ export class PlanningService {
 
   calculateSummary(plannedBudget: number, items: BudgetItem[]) {
     return calculateBudgetSummary(plannedBudget, items);
+  }
+
+  private async get<T>(table: TableName, eventId: string, id: string): Promise<T | null> {
+    if (usesSqlite()) return sqliteGet<T>(table, eventId, id);
+    const { data, error } = await getSupabase().from(table).select('*').eq('event_id', eventId).eq('id', id).maybeSingle();
+    if (error) throw new Error(`Failed to read ${table}: ${error.message}`);
+    return data as T | null;
+  }
+
+  private async insertMany<T>(table: TableName, eventId: string, rows: object[]): Promise<T[]> {
+    if (rows.length === 0) return [];
+    if (usesSqlite()) {
+      return sqliteTransaction(() => rows.map((row) => sqliteInsert<T>(table, eventId, row as Record<string, unknown>)));
+    }
+    const { data, error } = await getSupabase().from(table).insert(rows.map((row) => ({ ...row, event_id: eventId }))).select();
+    if (error) throw new Error(`Failed to create ${table}: ${error.message}`);
+    return (data ?? []) as T[];
   }
 
   private async insert<T>(table: TableName, payload: Record<string, unknown>): Promise<T> {

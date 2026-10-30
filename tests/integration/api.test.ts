@@ -130,6 +130,30 @@ describe('EventCraft AI — Full End-to-End API Integration Suite', () => {
     expect(items.some((i) => i.id === testBudgetItemId)).toBe(true);
   });
 
+  it('GET /api/events/:id/budget/summary — returns calculated allocation metrics and remaining budget', async () => {
+    const res = await fetch(`${baseUrl}/api/events/${testEventId}/budget/summary`, {
+      headers: testSessionHeader,
+    });
+    expect(res.status).toBe(200);
+    const summary = (await res.json()) as {
+      planned_budget: number;
+      planned_spending: number;
+      remaining_budget: number;
+      usage_percentage: number;
+      over_budget: boolean;
+      item_count: number;
+      category_totals: Record<string, { estimated: number; actual: number }>;
+    };
+    expect(summary.planned_budget).toBe(15000);
+    expect(summary.planned_spending).toBe(19500); // 15,000 starter + 4,500 custom line item
+    expect(summary.remaining_budget).toBe(-4500);
+    expect(summary.usage_percentage).toBe(130);
+    expect(summary.over_budget).toBe(true);
+    expect(summary.item_count).toBeGreaterThanOrEqual(6);
+    expect(summary.category_totals['Venue']).toBeDefined();
+    expect(summary.category_totals['Venue']?.estimated).toBe(4500);
+  });
+
   // 4. Timeline Management Endpoints
   it('POST /api/events/:id/timeline — creates a planning milestone', async () => {
     const payload = {
@@ -149,6 +173,24 @@ describe('EventCraft AI — Full End-to-End API Integration Suite', () => {
     expect(milestone.id).toBeDefined();
     expect(milestone.title).toBe(payload.title);
     expect(milestone.status).toBe('pending');
+  });
+
+  it('POST /api/events/:id/timeline — rejects impossible milestone scheduled far past the event date', async () => {
+    const payload = {
+      title: 'Impossible Milestone',
+      description: 'Scheduled months after the event date',
+      due_date: '2027-08-01T12:00:00Z', // Event date is 2026-11-15
+    };
+
+    const res = await fetch(`${baseUrl}/api/events/${testEventId}/timeline`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...testSessionHeader },
+      body: JSON.stringify(payload),
+    });
+
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toContain('Milestone due date cannot be scheduled more than 30 days after the event date');
   });
 
   it('GET /api/events/:id/timeline — lists milestones in chronological order', async () => {
@@ -266,6 +308,113 @@ describe('EventCraft AI — Full End-to-End API Integration Suite', () => {
     const copilotAnswer = (await res.json()) as { answer: string };
     expect(copilotAnswer.answer).toBeDefined();
     expect(copilotAnswer.answer.length).toBeGreaterThan(10);
+  });
+
+  it('POST /api/events/:id/ideas/generate — directly generates and persists event-specific ideas', async () => {
+    const res = await fetch(`${baseUrl}/api/events/${testEventId}/ideas/generate`, {
+      method: 'POST',
+      headers: testSessionHeader,
+    });
+    expect(res.status).toBe(201);
+    const ideas = (await res.json()) as Array<{ id: string; title: string; category: string }>;
+    expect(Array.isArray(ideas)).toBe(true);
+    expect(ideas.length).toBeGreaterThan(0);
+  });
+
+  it('POST /api/events/:id/ai/copilot/confirm — confirms and applies an add_timeline proposal', async () => {
+    // 1. Request timeline advice that returns an add_timeline proposal
+    const copilotRes = await fetch(`${baseUrl}/api/events/${testEventId}/ai/copilot`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...testSessionHeader },
+      body: JSON.stringify({ message: 'Suggest a day-of schedule and key milestones' }),
+    });
+    expect(copilotRes.status).toBe(200);
+    const copilotData = (await copilotRes.json()) as {
+      proposal: {
+        proposal_id: string;
+        action: string;
+      } | null;
+    };
+    expect(copilotData.proposal).not.toBeNull();
+    expect(copilotData.proposal?.action).toBe('add_timeline');
+    expect(copilotData.proposal?.proposal_id).toBeDefined();
+
+    // 2. Confirm the proposal
+    const confirmRes = await fetch(`${baseUrl}/api/events/${testEventId}/ai/copilot/confirm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...testSessionHeader },
+      body: JSON.stringify({ proposal_id: copilotData.proposal!.proposal_id }),
+    });
+    expect(confirmRes.status).toBe(201);
+    const result = (await confirmRes.json()) as { status: string; type: string };
+    expect(result.status).toBe('applied');
+    expect(result.type).toBe('timeline');
+  });
+
+  it('POST /api/events/:id/ai/copilot/confirm — confirms and applies an add_vendor proposal', async () => {
+    // 1. Request vendor advice that returns an add_vendor proposal
+    const copilotRes = await fetch(`${baseUrl}/api/events/${testEventId}/ai/copilot`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...testSessionHeader },
+      body: JSON.stringify({ message: 'What vendors do I need to book and hire?' }),
+    });
+    expect(copilotRes.status).toBe(200);
+    const copilotData = (await copilotRes.json()) as {
+      proposal: {
+        proposal_id: string;
+        action: string;
+      } | null;
+    };
+    expect(copilotData.proposal).not.toBeNull();
+    expect(copilotData.proposal?.action).toBe('add_vendor');
+    expect(copilotData.proposal?.proposal_id).toBeDefined();
+
+    // 2. Confirm the proposal
+    const confirmRes = await fetch(`${baseUrl}/api/events/${testEventId}/ai/copilot/confirm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...testSessionHeader },
+      body: JSON.stringify({ proposal_id: copilotData.proposal!.proposal_id }),
+    });
+    expect(confirmRes.status).toBe(201);
+    const result = (await confirmRes.json()) as { status: string; type: string };
+    expect(result.status).toBe('applied');
+    expect(result.type).toBe('vendor');
+  });
+
+  it('POST /api/events — supports birthday and community event types end-to-end', async () => {
+    // Birthday event
+    const bdayRes = await fetch(`${baseUrl}/api/events`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...testSessionHeader },
+      body: JSON.stringify({
+        type: 'birthday',
+        title: 'Maya 30th Birthday',
+        budget_amount: 2500,
+        currency: 'USD',
+      }),
+    });
+    expect(bdayRes.status).toBe(201);
+    const bday = (await bdayRes.json()) as { id: string; type: string };
+    expect(bday.type).toBe('birthday');
+
+    // Community event
+    const commRes = await fetch(`${baseUrl}/api/events`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...testSessionHeader },
+      body: JSON.stringify({
+        type: 'community',
+        title: 'Downtown Summer Street Fair',
+        budget_amount: 8000,
+        currency: 'USD',
+      }),
+    });
+    expect(commRes.status).toBe(201);
+    const comm = (await commRes.json()) as { id: string; type: string };
+    expect(comm.type).toBe('community');
+
+    // Clean up created secondary test events
+    await fetch(`${baseUrl}/api/events/${bday.id}`, { method: 'DELETE', headers: testSessionHeader });
+    await fetch(`${baseUrl}/api/events/${comm.id}`, { method: 'DELETE', headers: testSessionHeader });
   });
 
   // 8. Event Teardown and Cascade Integrity

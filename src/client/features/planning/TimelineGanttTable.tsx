@@ -69,8 +69,7 @@ export default function TimelineGanttTable({
       .map((i) => new Date(i.due_date!).getTime());
 
     if (timestamps.length === 0) {
-      const now = Date.now();
-      return { minTime: now, maxTime: now + 1 };
+      return { minTime: 0, maxTime: 1 };
     }
 
     const min = Math.min(...timestamps);

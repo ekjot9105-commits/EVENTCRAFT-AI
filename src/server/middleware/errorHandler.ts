@@ -36,7 +36,7 @@ export function notFound(resource: string, id: string): AppError {
  */
 export function errorHandler(
   err: Error,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction,
 ): void {
@@ -49,29 +49,29 @@ export function errorHandler(
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
       error: err.message,
-      request_id: _req.requestId,
+      request_id: req.requestId,
     });
     return;
   }
 
   if (err.name === 'AiConfigurationError') {
-    res.status(503).json({ error: 'AI service is not configured. Configure a supported server-side AI provider.', request_id: _req.requestId });
+    res.status(503).json({ error: 'AI service is not configured. Configure a supported server-side AI provider.', request_id: req.requestId });
     return;
   }
 
   if (err.name === 'AiProviderError') {
-    res.status(502).json({ error: 'The AI provider could not complete the request. Please try again.', request_id: _req.requestId });
+    res.status(502).json({ error: 'The AI provider could not complete the request. Please try again.', request_id: req.requestId });
     return;
   }
 
   if (err.message.startsWith('Missing SUPABASE')) {
-    res.status(503).json({ error: 'Database is not configured. Add the database variables from .env.example.', request_id: _req.requestId });
+    res.status(503).json({ error: 'Database is not configured. Add the database variables from .env.example.', request_id: req.requestId });
     return;
   }
 
   // Generic server error — don't leak internals
   res.status(500).json({
     error: 'An unexpected error occurred. Please try again.',
-    request_id: _req.requestId,
+    request_id: req.requestId,
   });
 }

@@ -24,7 +24,7 @@ const eventNavigation: NavigationItem[] = [
 
 function NavigationLink({ item, active }: { item: NavigationItem; active: boolean }) {
   return (
-    <Link to={item.href} className={`sidebar-link ${active ? 'sidebar-link-active' : ''}`}>
+    <Link to={item.href} className={`sidebar-link ${active ? 'sidebar-link-active' : ''}`} aria-current={active ? 'page' : undefined}>
       <Icon name={item.icon} className="h-[18px] w-[18px]" />
       <span>{item.label}</span>
     </Link>
@@ -48,7 +48,7 @@ export default function Layout() {
       <header className="app-header">
         <div className="flex h-16 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <button type="button" className="icon-button lg:hidden" aria-label="Toggle navigation" aria-expanded={mobileOpen} onClick={() => setMobileOpen((open) => !open)}>
+            <button type="button" className="icon-button lg:hidden" aria-label="Toggle navigation" aria-expanded={mobileOpen} aria-controls="app-sidebar" onClick={() => setMobileOpen((open) => !open)}>
               <Icon name={mobileOpen ? 'close' : 'menu'} className="h-5 w-5" />
             </button>
             <Link to="/" className="brand-mark" aria-label="EventCraft AI home">
@@ -66,7 +66,7 @@ export default function Layout() {
       </header>
 
       <div className="mx-auto flex max-w-[1600px]">
-        <aside className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}>
+        <aside id="app-sidebar" className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}>
           <div className="mb-6 flex items-center justify-between lg:hidden">
             <span className="eyebrow">Workspace</span>
             <button type="button" className="icon-button" aria-label="Close navigation" onClick={() => setMobileOpen(false)}>

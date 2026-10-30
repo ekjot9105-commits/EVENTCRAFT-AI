@@ -3,6 +3,7 @@ import Input from '../../shared/components/Input';
 import Select from '../../shared/components/Select';
 import Icon from '../../shared/components/Icon';
 import { EVENT_TYPE_DESCRIPTIONS, EVENT_TYPE_LABELS, EVENT_TYPES } from '../../../shared/constants/eventTypes';
+import { SUPPORTED_CURRENCIES } from '../../../shared/constants/currencies';
 import type { EventWizardData } from '../../../shared/schemas/eventWizard.schema';
 
 /** Shared contract for each wizard step's controlled form fields. */
@@ -74,7 +75,7 @@ export function BudgetStep({ data, errors, update }: StepProps) {
       <p className="page-subtitle">A clear starting point helps prioritize the right vendors and ideas later.</p>
       <div className="form-grid mt-8">
         <Input label="Budget amount" required type="number" min={0} step="0.01" value={data.budgetAmount || ''} error={errors.budgetAmount} onChange={(event) => update('budgetAmount', event.target.value === '' ? 0 : Number(event.target.value))} placeholder="0.00" />
-        <Select label="Currency" value={data.currency} options={['USD', 'CAD', 'GBP', 'EUR', 'AUD'].map((currency) => ({ value: currency, label: currency }))} onChange={(event) => update('currency', event.target.value)} />
+        <Select label="Currency" value={data.currency} options={SUPPORTED_CURRENCIES.map((currency) => ({ value: currency, label: currency }))} onChange={(event) => update('currency', event.target.value)} />
         <div className="md:col-span-2">
           <Input label="Important spending priorities" value={data.priorities} error={errors.priorities} onChange={(event) => update('priorities', event.target.value)} maxLength={500} placeholder="e.g. Great food, live music, accessible venue" hint="Optional. Separate multiple priorities with commas." />
         </div>
@@ -86,14 +87,40 @@ export function BudgetStep({ data, errors, update }: StepProps) {
   );
 }
 
+const THEME_PRESETS: Record<string, string[]> = {
+  wedding: ['Modern Garden Party', 'Rustic Barn Elegance', 'Classic Black Tie', 'Bohemian Beach', 'Traditional Cultural'],
+  birthday: ['Milestone Decade Gala', 'Retro 80s/90s Arcade', 'Neon Glow Party', 'Cozy Backyard BBQ', 'Mystery / Game Night'],
+  community: ['Neighborhood Block Party', 'Cultural Arts & Food Fair', 'Charity Run & Festival', 'Farmers Market & Music', 'Youth Sports Rally'],
+};
+const DEFAULT_THEME_PRESETS = ['Modern Garden Party', 'Milestone Gala', 'Community Festival'];
+
 export function PersonalizationStep({ data, errors, update }: StepProps) {
+  const presets = THEME_PRESETS[data.type] ?? DEFAULT_THEME_PRESETS;
+
   return (
     <section aria-labelledby="step-title">
       <p className="eyebrow">Step 4 of 5</p>
       <h2 id="step-title" className="page-title">Make it yours</h2>
       <p className="page-subtitle">Add context that will make future recommendations more useful and respectful.</p>
       <div className="form-grid mt-8">
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 space-y-2">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <span className="text-xs font-semibold text-surface-400">Popular {EVENT_TYPE_LABELS[data.type]} Themes:</span>
+            {presets.map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => update('style', preset)}
+                className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-all ${
+                  data.style === preset
+                    ? 'bg-brand-700 text-white'
+                    : 'bg-white/5 text-surface-400 hover:text-surface-200 hover:bg-white/10'
+                }`}
+              >
+                {preset}
+              </button>
+            ))}
+          </div>
           <Input label="Preferred style or theme" value={data.style} error={errors.style} onChange={(event) => update('style', event.target.value)} maxLength={500} placeholder="e.g. Modern garden party, retro arcade" />
         </div>
         <div className="md:col-span-2">

@@ -12,3 +12,6 @@ export {
   TIMELINE_STATUS_COLORS,
 } from './statusEnums.js';
 export type { TimelineStatus, VendorStatus, IdeaStatus } from './statusEnums.js';
+
+export { SUPPORTED_CURRENCIES } from './currencies.js';
+export type { Currency } from './currencies.js';

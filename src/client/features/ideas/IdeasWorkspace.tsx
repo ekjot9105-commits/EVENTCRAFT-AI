@@ -17,10 +17,27 @@ export default function IdeasWorkspace() {
   const { id } = useParams<{ id: string }>();
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string>('#All');
   const [addedToBudget, setAddedToBudget] = useState<Set<string>>(new Set());
   const [addedToTimeline, setAddedToTimeline] = useState<Set<string>>(new Set());
+
+  const handleGenerateIdeas = async () => {
+    if (!id) return;
+    setGenerating(true);
+    setError(null);
+    try {
+      const generated = await ideasApi.generate(id);
+      fireConfetti(undefined, undefined, 60);
+      showToast(`Generated ${generated.length} personalized ideas!`, 'success');
+      await load();
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Unable to generate ideas.');
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const load = async () => {
     if (!id) return;
@@ -121,12 +138,17 @@ export default function IdeasWorkspace() {
       <BackButton />
       
       {/* Header */}
-      <div>
-        <p className="eyebrow">Personalization studio</p>
-        <h1 className="page-title">Personalized Ideas</h1>
-        <p className="page-subtitle">
-          Review generated creative suggestions, filter by tag, and directly convert them into budget items or timeline tasks.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="eyebrow">Personalization studio</p>
+          <h1 className="page-title">Personalized Ideas</h1>
+          <p className="page-subtitle">
+            Review generated creative suggestions, filter by tag, and directly convert them into budget items or timeline tasks.
+          </p>
+        </div>
+        <Button onClick={() => void handleGenerateIdeas()} loading={generating}>
+          ✨ Generate Ideas with AI
+        </Button>
       </div>
 
       {error && (
@@ -150,7 +172,7 @@ export default function IdeasWorkspace() {
                 onClick={() => setSelectedTag(tag)}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
                   selectedTag === tag
-                    ? 'bg-brand-500 text-white shadow-sm'
+                    ? 'bg-brand-700 text-white shadow-sm'
                     : 'bg-white/5 text-surface-400 hover:text-surface-200 hover:bg-white/10'
                 }`}
               >
@@ -164,11 +186,18 @@ export default function IdeasWorkspace() {
       {/* Ideas Grid */}
       <Card>
         {filteredIdeas.length === 0 ? (
-          <p className="text-sm text-surface-400 py-6 text-center">
-            {ideas.length === 0
-              ? 'No ideas yet. Generate a plan from AI Copilot to add event-specific suggestions.'
-              : `No ideas found matching "${selectedTag}". Try selecting another tag.`}
-          </p>
+          <div className="text-center py-8">
+            <p className="text-sm text-surface-400 mb-4">
+              {ideas.length === 0
+                ? 'No personalized ideas yet for this event.'
+                : `No ideas found matching "${selectedTag}". Try selecting another tag.`}
+            </p>
+            {ideas.length === 0 && (
+              <Button size="sm" onClick={() => void handleGenerateIdeas()} loading={generating}>
+                ⚡ Auto-Generate Creative Ideas
+              </Button>
+            )}
+          </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {filteredIdeas.map((idea) => {

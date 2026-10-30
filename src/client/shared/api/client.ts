@@ -2,9 +2,18 @@
 // API Client — HTTP Wrapper
 // ===========================================
 
-// Keep the browser client relative to the deployed origin so Vite and the
-// production server can share the same API contract without exposing secrets.
-const API_BASE = '/api';
+import type { Event, CreateEventPayload, UpdateEventPayload } from '../../../shared/types/event';
+import type { BudgetItem, CreateBudgetItemPayload, UpdateBudgetItemPayload, BudgetSummary } from '../../../shared/types/budget';
+import type { TimelineItem, CreateTimelineItemPayload, UpdateTimelineItemPayload } from '../../../shared/types/timeline';
+import type { Vendor, CreateVendorPayload, UpdateVendorPayload } from '../../../shared/types/vendor';
+import type { CopilotResponse, StoredPlan } from '../../../shared/types/ai';
+import type { Idea, CreateIdeaPayload } from '../../../shared/types/idea';
+
+// Keep the browser client relative to the deployed origin by default so Vite, Vercel,
+// and the production server can share the same API contract without exposing secrets,
+// while allowing VITE_API_BASE_URL override for external API hosting.
+const rawApiBase = (import.meta.env['VITE_API_BASE_URL'] as string | undefined)?.trim();
+const API_BASE = rawApiBase ? rawApiBase.replace(/\/+$/, '') : '/api';
 
 interface ApiError {
   error: string;
@@ -40,6 +49,13 @@ function setStoredAnonId(id: string): void {
   }
 }
 
+/** Resolves an API path against the same-origin `/api` prefix or an external VITE_API_BASE_URL. */
+export function apiUrl(endpoint: string, base = API_BASE): string {
+  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  if (!base.startsWith('http')) return `${base}${normalizedEndpoint}`;
+  return base.endsWith('/api') ? `${base}${normalizedEndpoint}` : `${base}/api${normalizedEndpoint}`;
+}
+
 /**
  * Execute a typed JSON request and normalize transport/API failures into one
  * error type that feature components can display consistently.
@@ -48,16 +64,16 @@ async function request<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const url = `${API_BASE}${endpoint}`;
   const anonId = getStoredAnonId();
 
-  const res = await fetch(url, {
+  // Spread options first so caller headers extend, rather than replace, the defaults.
+  const res = await fetch(apiUrl(endpoint), {
+    ...options,
     headers: {
       'Content-Type': 'application/json',
       ...(anonId ? { 'x-anon-id': anonId } : {}),
       ...options.headers,
     },
-    ...options,
   });
 
   const responseAnonId = res.headers?.get('x-anon-id');
@@ -86,13 +102,6 @@ async function request<T>(
 
   return data as T;
 }
-
-import type { Event, CreateEventPayload, UpdateEventPayload } from '../../../shared/types/event';
-import type { BudgetItem, CreateBudgetItemPayload, UpdateBudgetItemPayload } from '../../../shared/types/budget';
-import type { TimelineItem, CreateTimelineItemPayload, UpdateTimelineItemPayload } from '../../../shared/types/timeline';
-import type { Vendor, CreateVendorPayload, UpdateVendorPayload } from '../../../shared/types/vendor';
-import type { CopilotResponse, StoredPlan } from '../../../shared/types/ai';
-import type { Idea, CreateIdeaPayload } from '../../../shared/types/idea';
 
 // Event endpoints manage the top-level planning brief and event lifecycle.
 export const eventsApi = {
@@ -123,6 +132,7 @@ export const eventsApi = {
 export const planningApi = {
   budget: {
     list: (eventId: string) => request<BudgetItem[]>(`/events/${eventId}/budget`),
+    summary: (eventId: string) => request<BudgetSummary>(`/events/${eventId}/budget/summary`),
     create: (eventId: string, data: CreateBudgetItemPayload) =>
       request<BudgetItem>(`/events/${eventId}/budget`, {
         method: 'POST',
@@ -190,6 +200,7 @@ export const aiApi = {
 /** Ideas remain editable records after generation instead of transient AI text. */
 export const ideasApi = {
   list: (eventId: string) => request<Idea[]>(`/events/${eventId}/ideas`),
+  generate: (eventId: string) => request<Idea[]>(`/events/${eventId}/ideas/generate`, { method: 'POST' }),
   create: (eventId: string, data: CreateIdeaPayload) => request<Idea>(`/events/${eventId}/ideas`, { method: 'POST', body: JSON.stringify(data) }),
   save: (eventId: string, ideaId: string) => request<Idea>(`/events/${eventId}/ideas/${ideaId}`, { method: 'PATCH', body: JSON.stringify({ status: 'saved' }) }),
   remove: (eventId: string, ideaId: string) => request<Idea>(`/events/${eventId}/ideas/${ideaId}`, { method: 'PATCH', body: JSON.stringify({ status: 'dismissed' }) }),
@@ -198,9 +209,9 @@ export const ideasApi = {
 /** Calendar & PDF document export endpoints */
 export const exportApi = {
   downloadIcs: (eventId: string) => {
-    window.open(`/api/events/${eventId}/export/ics`, '_blank');
+    window.open(apiUrl(`/events/${eventId}/export/ics`), '_blank', 'noopener');
   },
   downloadPdf: (eventId: string) => {
-    window.open(`/api/events/${eventId}/export/pdf`, '_blank');
+    window.open(apiUrl(`/events/${eventId}/export/pdf`), '_blank', 'noopener');
   },
 };

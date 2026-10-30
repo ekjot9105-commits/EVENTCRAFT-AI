@@ -31,16 +31,18 @@ export default function ToastContainer() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm" role="region" aria-label="Notifications" aria-live="polite">
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm" role="region" aria-label="Notifications">
       {toasts.map((toast) => (
         <div
           key={toast.id}
           className={`flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-xl animate-slide-up ${colors[toast.type]}`}
-          role="alert"
+          // Errors interrupt assistive tech; success/info wait politely.
+          role={toast.type === 'error' ? 'alert' : 'status'}
         >
           <span className="text-sm font-bold" aria-hidden="true">{icons[toast.type]}</span>
           <p className="text-sm">{toast.message}</p>
           <button
+            type="button"
             onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
             className="ml-auto p-1 rounded hover:bg-white/10 transition-colors"
             aria-label="Dismiss notification"

@@ -22,15 +22,22 @@ interface VendorWorkspaceProps {
 export default function VendorWorkspace({ eventId, event, vendors, onChanged }: VendorWorkspaceProps) {
   const [category, setCategory] = useState('');
   const [name, setName] = useState('');
+  const [quotedCost, setQuotedCost] = useState('');
+  const [notes, setNotes] = useState('');
   const [status, setStatus] = useState<Vendor['status']>('not_started');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [editing, setEditing] = useState<Vendor | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Vendor Readiness calculations
+  // Vendor Readiness & Quote calculations
   const bookedCount = useMemo(() => vendors.filter((v) => v.status === 'booked' || v.status === 'paid').length, [vendors]);
   const readinessPercent = vendors.length > 0 ? Math.round((bookedCount / vendors.length) * 100) : 0;
+  const totalQuoted = useMemo(() => vendors.reduce((sum, v) => sum + (v.quoted_cost ?? 0), 0), [vendors]);
+  const totalBookedCost = useMemo(() => vendors
+    .filter((v) => v.status === 'booked' || v.status === 'paid')
+    .reduce((sum, v) => sum + (v.quoted_cost ?? 0), 0), [vendors]);
+  const currency = event?.currency ?? 'USD';
 
   // Category list
   const allCategories = useMemo(() => {
@@ -66,9 +73,20 @@ export default function VendorWorkspace({ eventId, event, vendors, onChanged }: 
   const save = async (e: FormEvent) => {
     e.preventDefault();
     if (!category.trim() || !name.trim()) { setError('Enter a vendor category and name.'); return; }
+    const parsedCost = quotedCost ? Number(quotedCost) : undefined;
+    if (parsedCost !== undefined && (!Number.isFinite(parsedCost) || parsedCost < 0)) {
+      setError('Quoted cost must be a nonnegative number.');
+      return;
+    }
     setBusy(true); setError(null);
     try {
-      const payload = { category, name, status };
+      const payload = {
+        category: category.trim(),
+        name: name.trim(),
+        status,
+        quoted_cost: parsedCost,
+        notes: notes.trim() || undefined,
+      };
       if (status === 'booked' || status === 'paid') {
         fireConfetti(undefined, undefined, 50);
       }
@@ -95,12 +113,21 @@ export default function VendorWorkspace({ eventId, event, vendors, onChanged }: 
     }
   };
 
-  const reset = () => { setCategory(''); setName(''); setStatus('not_started'); setEditing(null); };
+  const reset = () => {
+    setCategory('');
+    setName('');
+    setStatus('not_started');
+    setQuotedCost('');
+    setNotes('');
+    setEditing(null);
+  };
   const edit = (vendor: Vendor) => {
     setEditing(vendor);
     setCategory(vendor.category);
     setName(vendor.name);
     setStatus(vendor.status);
+    setQuotedCost(vendor.quoted_cost != null ? String(vendor.quoted_cost) : '');
+    setNotes(vendor.notes ?? '');
   };
 
   return (
@@ -126,6 +153,22 @@ export default function VendorWorkspace({ eventId, event, vendors, onChanged }: 
               className="h-full rounded-full bg-emerald-500 transition-all duration-700 ease-out"
               style={{ width: `${readinessPercent}%` }}
             />
+          </div>
+
+          {/* Quote Comparison Summary */}
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 pt-3 border-t border-white/10 text-xs">
+            <div className="rounded-xl bg-white/[0.03] p-3 border border-white/5">
+              <span className="text-surface-400 block">Total Quoted</span>
+              <strong className="text-surface-100 text-sm">{currency} {totalQuoted.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+            </div>
+            <div className="rounded-xl bg-white/[0.03] p-3 border border-white/5">
+              <span className="text-surface-400 block">Committed / Booked</span>
+              <strong className="text-emerald-300 text-sm">{currency} {totalBookedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+            </div>
+            <div className="rounded-xl bg-white/[0.03] p-3 border border-white/5 col-span-2 sm:col-span-1">
+              <span className="text-surface-400 block">Pending Quotes</span>
+              <strong className="text-amber-300 text-sm">{vendors.filter((v) => v.status === 'quoted' || v.status === 'contacted').length} vendors</strong>
+            </div>
           </div>
 
           {vendors.length === 0 && (
@@ -157,6 +200,8 @@ export default function VendorWorkspace({ eventId, event, vendors, onChanged }: 
         <form className="form-grid" onSubmit={save}>
           <Input label="Category" required value={category} onChange={(eventInput) => setCategory(eventInput.target.value)} placeholder="Venue, Catering, Photo/Video..." />
           <Input label="Vendor name" required value={name} onChange={(eventInput) => setName(eventInput.target.value)} placeholder="e.g. Sunset Sound DJ or Flora Studio" />
+          <Input label={`Quoted cost (${currency})`} type="number" min="0" step="any" value={quotedCost} onChange={(eventInput) => setQuotedCost(eventInput.target.value)} placeholder="e.g. 1500" />
+          <Input label="Notes / Quote details" value={notes} onChange={(eventInput) => setNotes(eventInput.target.value)} placeholder="e.g. Includes 8 hours coverage + 2 shooters" />
           <Select
             label="Status"
             value={status}
@@ -196,19 +241,29 @@ export default function VendorWorkspace({ eventId, event, vendors, onChanged }: 
             return (
               <li key={vendor.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm text-surface-200 border-b border-white/5 last:border-none">
                 <div>
-                  <span className="inline-block rounded-md bg-white/5 px-2 py-0.5 text-xs text-brand-300 mr-2 font-medium">
-                    {vendor.category}
-                  </span>
-                  <strong className="text-surface-100">{vendor.name}</strong>
-                  <span className={`ml-2 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
-                    isBooked ? 'bg-emerald-500/20 text-emerald-300' : 'bg-surface-700/50 text-surface-400'
-                  }`}>
-                    {vendor.status.replace('_', ' ')}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-block rounded-md bg-white/5 px-2 py-0.5 text-xs text-brand-300 font-medium">
+                      {vendor.category}
+                    </span>
+                    <strong className="text-surface-100">{vendor.name}</strong>
+                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      isBooked ? 'bg-emerald-500/20 text-emerald-300' : 'bg-surface-700/50 text-surface-400'
+                    }`}>
+                      {vendor.status.replace('_', ' ')}
+                    </span>
+                    {vendor.quoted_cost != null && (
+                      <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-300">
+                        {currency} {Number(vendor.quoted_cost).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  {vendor.notes && (
+                    <p className="mt-1 text-xs text-surface-400 max-w-lg">{vendor.notes}</p>
+                  )}
                 </div>
                 <span className="flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => edit(vendor)}>Edit</Button>
-                  <Button size="sm" variant="danger" onClick={() => void remove(vendor)} disabled={busy}>Delete</Button>
+                  <Button size="sm" variant="secondary" onClick={() => edit(vendor)} aria-label={`Edit ${vendor.name}`}>Edit</Button>
+                  <Button size="sm" variant="danger" onClick={() => void remove(vendor)} disabled={busy} aria-label={`Delete ${vendor.name}`}>Delete</Button>
                 </span>
               </li>
             );

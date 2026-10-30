@@ -139,8 +139,6 @@ function buildPdfDocument(data: {
     '(--------------------------------------------------------------------------------) Tj',
   ];
 
-  let currentYOffset = 0;
-
   // Add top budget items
   for (const item of data.budgetItems.slice(0, 15)) {
     const cat = item.category.padEnd(25).slice(0, 25);
@@ -149,7 +147,6 @@ function buildPdfDocument(data: {
     const act = item.actual.padStart(12);
     contentLines.push('0 -14 Td');
     contentLines.push(`(${escapePdfText(`${cat} ${nm} ${est} ${act}`)}) Tj`);
-    currentYOffset++;
   }
 
   // Add timeline section
@@ -207,8 +204,8 @@ function buildPdfDocument(data: {
     `5 0 obj\n<< /Length ${streamLength} >>\nstream\n${streamContent}\nendstream\nendobj\n`,
   ];
 
-  let header = '%PDF-1.4\n';
-  let offset = header.length;
+  const header = '%PDF-1.4\n';
+  const offset = header.length;
   const xrefEntries: string[] = ['0000000000 65535 f \n'];
 
   let body = '';

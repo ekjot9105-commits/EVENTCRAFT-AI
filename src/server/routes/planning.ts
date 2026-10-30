@@ -16,6 +16,7 @@ import {
 } from '../../shared/schemas/planning.schema.js';
 import { parseResourceId } from '../utils/resourceId.js';
 import { requireEventOwnership } from '../middleware/eventOwnership.js';
+import { validateTimelineSchedule } from '../utils/timelineSchedule.js';
 
 const router = Router();
 
@@ -47,6 +48,21 @@ router.get('/events/:eventId/budget', async (req: Request, res: Response, next: 
   try {
     const items = await planningService.listBudgetItems(eventId(req));
     res.json(items);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * GET /api/events/:eventId/budget/summary — Aggregated budget spending, allocations, and remaining balance
+ */
+router.get('/events/:eventId/budget/summary', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = eventId(req);
+    const event = res.locals['event'] as { budget_amount?: number } | undefined;
+    const items = await planningService.listBudgetItems(id);
+    const summary = planningService.calculateSummary(event?.budget_amount ?? 0, items);
+    res.json(summary);
   } catch (error) {
     next(error);
   }
@@ -110,6 +126,12 @@ router.get('/events/:eventId/timeline', async (req: Request, res: Response, next
  */
 router.post('/events/:eventId/timeline', validateBody(createTimelineItemSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const event = res.locals['event'] as { date?: string | null } | undefined;
+    const scheduleError = validateTimelineSchedule(event?.date, req.body.due_date);
+    if (scheduleError) {
+      res.status(400).json({ error: scheduleError });
+      return;
+    }
     const item = await planningService.createTimelineItem(eventId(req), req.body);
     res.status(201).json(item);
   } catch (error) {
@@ -122,6 +144,12 @@ router.post('/events/:eventId/timeline', validateBody(createTimelineItemSchema),
  */
 router.patch('/events/:eventId/timeline/:itemId', validateBody(updateTimelineItemSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const event = res.locals['event'] as { date?: string | null } | undefined;
+    const scheduleError = validateTimelineSchedule(event?.date, req.body.due_date);
+    if (scheduleError) {
+      res.status(400).json({ error: scheduleError });
+      return;
+    }
     const item = await planningService.updateTimelineItem(eventId(req), itemId(req), req.body);
     if (!item) throw notFound('Timeline item', itemId(req));
     res.json(item);
