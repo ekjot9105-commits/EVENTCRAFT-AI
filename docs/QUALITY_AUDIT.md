@@ -23,6 +23,7 @@ The audit reviewed the Phase 1–4 React/Express/Supabase modular monolith, shar
 - **Efficiency:** AI calls are explicit, bounded, and rate-limited; budget arithmetic is local and deterministic. No private response cache exists. List endpoints still need pagination for public-scale deployment.
 - **Testing:** 254 deterministic tests pass with enforced coverage thresholds, plus real-browser lifecycle and axe accessibility coverage through Playwright. Live Supabase/hosted-model and keyless local-model verification remain optional and require their respective services.
 - **Reproducibility:** GitHub Actions now runs the clean-install verification, production audit, Playwright lifecycle, and accessibility checks on every pull request and `main` push.
+- **Release safety:** `npm run release:check` guards the environment contract, tracked-secret hygiene, production artifact presence, and the 450 kB client-entry budget.
 - **Accessibility:** Semantic landmarks, labels, focus styles, live AI status, button names, retry/error text, and component-level axe checks are present. Real-browser axe and full keyboard E2E evidence remain future work.
 
 ## Dependency audit

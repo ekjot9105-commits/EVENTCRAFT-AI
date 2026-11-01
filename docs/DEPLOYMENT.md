@@ -137,3 +137,6 @@ Once deployed, verify the deployment:
 | `Could not find declaration file for 'express'` | npm skipped devDependencies in production | Moved compile-time types into `dependencies` in `package.json`. |
 | `Cannot find module '@testing-library/jest-dom'` | `tsc -b` compiled test setups | Added `"exclude": ["src/client/test", "**/*.test.*"]` to `tsconfig.json`. |
 | Free Render Web Service sleeps | Inactivity timeout on free tier | First request takes ~45 seconds to wake up container; subsequent requests are immediate. |
+# Release readiness
+
+After `npm run build`, run `npm run release:check`. It verifies that the required scripts and environment contract exist, no environment file or secret-like value is tracked, and the client entry chunk remains within the 450 kB performance budget.

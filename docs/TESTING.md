@@ -24,6 +24,8 @@ The Phase 0 baseline is 29 test files and 244 passing tests. The current suite i
 
 GitHub Actions reproduces the same checks from a clean Node 22 install. It copies `.env.example` for credential-free SQLite/demo operation, runs `npm run verify`, installs Chromium, and runs the Playwright lifecycle and accessibility suite on every push to `main` and every pull request.
 
+The release gate runs after the build with `npm run release:check`; it is intentionally deterministic and does not require Supabase or Gemini credentials.
+
 ## Mocking policy
 
 The AI provider is injected through `setAiProviderForTests`; tests do not call Gemini or spend quota. Browser tests stub `fetch` at the transport boundary for shell and wizard workflows. These tests intentionally do not claim live database or provider coverage.
