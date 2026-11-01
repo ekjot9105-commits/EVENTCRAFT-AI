@@ -195,7 +195,7 @@ describe('event creation wizard', () => {
     const { calls } = installApiMock({ 'POST /events': (body) => ({ status: 201, body: { ...event, ...(body as object) } }) });
     renderAt('/events/new');
 
-    fireEvent.click(screen.getByRole('button', { name: /birthday/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /birthday/i }));
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     fireEvent.change(screen.getByLabelText(/event name/i), { target: { value: 'Kabir turns 8' } });
     fireEvent.change(screen.getByLabelText(/event date/i), { target: { value: '2026-12-12' } });

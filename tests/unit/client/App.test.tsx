@@ -25,9 +25,9 @@ describe('application shell and event wizard', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('link', { name: /eventcraft ai home/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /your big moments deserve/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /start planning/i })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /eventcraft ai home/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /your big moments deserve/i })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /start planning/i })).toBeInTheDocument();
   });
 
   it('renders the event workspace from the dashboard route', async () => {
@@ -37,32 +37,32 @@ describe('application shell and event wizard', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('heading', { name: /your events/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /new event/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /your events/i })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /new event/i })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText(/no events yet/i)).toBeInTheDocument());
   });
 
-  it('validates the first required field before moving forward', () => {
+  it('validates the first required field before moving forward', async () => {
     render(
       <MemoryRouter initialEntries={['/events/new?step=2']}>
         <App />
       </MemoryRouter>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /continue/i }));
 
     expect(screen.getByText(/event name is required/i)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /set the essentials/i })).toBeInTheDocument();
   });
 
-  it('preserves values when navigating backward through the wizard', () => {
+  it('preserves values when navigating backward through the wizard', async () => {
     render(
       <MemoryRouter initialEntries={['/events/new?step=1']}>
         <App />
       </MemoryRouter>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /continue/i }));
     fireEvent.change(screen.getByLabelText(/event name/i), { target: { value: 'Riya birthday' } });
     fireEvent.change(screen.getByLabelText(/event date/i), { target: { value: '2026-12-10' } });
     fireEvent.change(screen.getByLabelText(/expected guests/i), { target: { value: '40' } });
