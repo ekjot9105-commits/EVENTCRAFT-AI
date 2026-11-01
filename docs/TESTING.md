@@ -32,8 +32,8 @@ The AI provider is injected through `setAiProviderForTests`; tests do not call G
 
 ## Known warnings and future coverage
 
-- Playwright browser lifecycle tests are not configured yet.
-- Component-level axe checks exist; real-browser axe and keyboard workflows remain future work.
+- Playwright browser lifecycle tests cover landing, wizard progression, and birthday creation; wedding, community, and full planning-workspace journeys remain to be added.
+- Real-browser axe checks cover the landing page and event wizard; every implemented route and mobile viewport remain to be added.
 - Authenticated multi-user integration tests require a configured Supabase environment; local event ownership is covered.
 - Supabase service tests should use a repository mock or disposable test project before release.
 - SQLite uses Node 24's experimental built-in `node:sqlite`; pin Node 24+ for the credential-free demo path.

@@ -10,7 +10,7 @@ The repository is a TypeScript modular monolith:
 - **AI:** Server-only `@google/genai` adapter with event-specific prompts, Zod output validation, bounded requests, and explicit copilot proposals.
 - **Quality:** Vitest 5, JSDOM, React Testing Library, axe-core component checks, ESLint 10, and a CI quality workflow.
 
-The existing modular monolith is suitable. The current verified baseline is recorded in [BASELINE.md](./BASELINE.md). Playwright browser testing and shared hosted rate limiting remain future phases.
+The existing modular monolith is suitable. The current verified baseline is recorded in [BASELINE.md](./BASELINE.md) and the non-regression scorecard is recorded in [MASTER_SCORECARD.md](./MASTER_SCORECARD.md). Playwright is configured for the landing/wizard lifecycle; full hosted rate limiting and complete route coverage remain hardening work.
 
 ## 2. Actual repository structure
 
@@ -96,7 +96,7 @@ Use database constraints for enum-like statuses and non-negative monetary/date i
 
 Current protections include JSON body size limits, Helmet, Zod validation, server-only credentials, event ownership middleware, no client-side AI call, prompt sanitization, validated AI output, and expiring single-use proposals. Current follow-up gaps:
 
-- Authentication is currently designed around explicit demo sessions; strict Bearer-token enforcement is a follow-up phase.
+- Authentication supports strict Bearer-token enforcement when `AUTH_ENABLED=true`; the default demo remains anonymous and must not be treated as a public multi-user deployment.
 - The in-memory AI limiter is suitable for a single instance but should use a shared store for horizontally scaled deployments.
 - `metadata: z.record(z.unknown())` is broad and needs feature-specific schemas before AI or persistence use.
 - Development disables Helmet CSP; production CSP policy is not explicitly reviewed.
@@ -124,7 +124,7 @@ Client errors should retain field details for forms, show a retryable message fo
 
 Existing positives include a skip link, semantic `main/header/nav`, associated `Input` labels, `aria-invalid`/`aria-describedby`, visible `:focus-visible` styling, reduced-motion CSS, and a native dialog component with focus restoration. Gaps include:
 
-- Component-level axe checks exist; real-browser axe and keyboard workflows remain future work.
+- Component-level axe checks and real-browser axe/keyboard checks exist for the landing page and event wizard; complete route and mobile coverage remains hardening work.
 - Event type buttons use radio semantics without a complete roving/fieldset radio-group interaction model.
 - The modal does not explicitly identify `role="dialog"`/`aria-modal` and has no robust focus trap fallback.
 - Tabs use links with `role="tab"` but do not expose a complete tabpanel relationship.
