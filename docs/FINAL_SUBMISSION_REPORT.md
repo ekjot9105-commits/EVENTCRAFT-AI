@@ -32,8 +32,8 @@ The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATE
 
 - `npm run type-check`: passed with zero errors.
 - `npm run lint`: passed with zero errors and zero warnings.
-- `npm test`: 31 test files, 254 tests passed.
-- `npm run test:coverage`: passed; 83.56% statements, 70.06% branches, 81.61% functions, and 85.57% lines.
+- `npm test`: 31 test files, 259 tests passed.
+- `npm run test:coverage`: passed; 83.59% statements, 70.23% branches, 81.69% functions, and 85.59% lines.
 - `npm run build`: passed; emitted the split client SPA (377.73 kB entry JavaScript, 55.91 kB CSS) and compiled server.
 - `npm run verify`: passes type-check, lint, tests, coverage, build, production audit, and diff checks.
 
@@ -63,7 +63,7 @@ The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATE
 | Command | Result |
 |---|---|
 | `npm run type-check` | Passed (0 errors) |
-| `npm test` | 31 files, 254 tests passed |
+| `npm test` | 31 files, 259 tests passed |
 | `npm run lint` | Passed (0 errors, 0 warnings) |
 | `npm run build` | Passed; client and server artifacts emitted |
 | `npm run test:coverage` | Passed; 100% on prompts, schemas, budget calculations, rate limiting, and ownership middleware |
@@ -110,7 +110,7 @@ The browser suite covers landing, wizard progression, birthday creation, landing
 - Production server starts successfully.
 - Direct nested production routes serve the SPA.
 - The current repository supports an explicit anonymous demo and strict authenticated mode; anonymous demo mode must remain restricted to controlled evaluation deployments.
-- 254 deterministic tests pass.
+- 259 deterministic tests pass.
 - All three event types are present in the wizard.
 - Core AI, planning, persistence, and proposal-confirmation boundaries are implemented and documented.
 

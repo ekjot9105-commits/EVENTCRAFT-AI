@@ -5,7 +5,7 @@
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
 [![Express](https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge&logo=express)](https://expressjs.com/)
 [![Gemini](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash-4285F4?style=for-the-badge&logo=google)](https://aistudio.google.com/)
-[![Tests](https://img.shields.io/badge/Tests-254%20Passed-success?style=for-the-badge&logo=vitest)](https://vitest.dev/)
+[![Tests](https://img.shields.io/badge/Tests-259%20Passed-success?style=for-the-badge&logo=vitest)](https://vitest.dev/)
 
 > **GenAI-powered event planning assistant** for weddings, birthdays, anniversaries, and community gatherings. Features schema-backed budgets, an interactive 3D Timeline Highway, vendor coordination, a creative ideas studio, and a stage-and-confirm AI Copilot.
 
@@ -128,7 +128,7 @@ For complete deployment instructions, environment setup, and Supabase database m
 | `npm run dev:server` | Runs server with hot reload (`tsx watch`) |
 | `npm run build` | Compiles client and server for production |
 | `npm run server:start` | Runs the compiled production Express server |
-| `npm test` | Runs 254 deterministic Vitest tests across 31 test files |
+| `npm test` | Runs 259 deterministic Vitest tests across 31 test files |
 | `npm run test:e2e` | Runs real-browser lifecycle tests with Playwright |
 | `npm run test:a11y` | Runs axe accessibility and keyboard interaction checks |
 | `npm run release:check` | Checks release configuration, secret hygiene, artifacts, and bundle budget |
@@ -144,7 +144,7 @@ For complete deployment instructions, environment setup, and Supabase database m
 EventCraft AI maintains strict engineering standards:
 - **Zero Lint Warnings:** Verified with ESLint 10.
 - **Strict TypeScript:** Strict null checks, no unchecked index access, explicit boundary typing.
-- **100% Test Pass Rate:** 254 tests across 31 test files, including unit, component, API, persistence, AI, and security coverage.
+- **100% Test Pass Rate:** 259 tests across 31 test files, including unit, component, API, persistence, AI, and security coverage.
 - **Measured coverage:** 83.11% statements, 68.96% branches, 81.4% functions, and 85.2% lines.
 - **Anonymous Tenant Isolation:** Cookie and header session management (`ec_anon_id`) ensures zero multi-user collision in public demo environments.
 - **Accessible Visualizations:** Screen-reader accessible data tables and keyboard rotation support for 3D canvas charts.

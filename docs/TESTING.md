@@ -20,7 +20,7 @@
 - **SQLite persistence smoke test:** With `DATABASE_PROVIDER=sqlite`, the API can be exercised locally without Supabase; the adapter creates its schema and persists events and planning records in `SQLITE_PATH`.
 - **Integration limitations:** Supabase persistence and hosted Gemini requests are not required for the normal suite. Keyless local AI can be verified with Ollama or LM Studio when a local model service is installed.
 
-The Phase 0 baseline is 29 test files and 244 passing tests. The current suite is 31 test files and 254 passing tests. Current coverage is 83.96% statements, 70.12% branches, 81.61% functions, and 86.03% lines. Browser lifecycle coverage is available through `npm run test:e2e`; axe accessibility and keyboard checks are available through `npm run test:a11y`.
+The Phase 0 baseline is 29 test files and 244 passing tests. The master-plan baseline is recorded separately in [MASTER_SCORECARD.md](./MASTER_SCORECARD.md). The current suite is 31 test files and 259 passing tests. Current coverage is 83.59% statements, 70.23% branches, 81.69% functions, and 85.59% lines. Browser lifecycle coverage is available through `npm run test:e2e`; axe accessibility and keyboard checks are available through `npm run test:a11y`.
 
 GitHub Actions reproduces the same checks from a clean Node 22 install. It copies `.env.example` for credential-free SQLite/demo operation, runs `npm run verify`, installs Chromium, and runs the Playwright lifecycle and accessibility suite on every push to `main` and every pull request.
 
