@@ -71,9 +71,13 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "jsdom": "^29.1.1",
+    "minimatch": "^11.0.3",
     "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "typescript-eslint": "^8.72.0",
     "vitest": "^5.0.5"
+  },
+  "overrides": {
+    "minimatch": "^11.0.3"
   }
 }
