@@ -27,7 +27,7 @@ jobs:
         run: npm ci
 
       - name: Configure credential-free test environment
-        run: cp .env.example .env
+        run: cp .env.test.example .env
 
       - name: Run static, unit, coverage, build, audit, and diff checks
         run: npm run verify

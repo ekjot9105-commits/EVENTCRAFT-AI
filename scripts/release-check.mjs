@@ -31,7 +31,8 @@ try {
   const trackedFiles = execFileSync('git', ['ls-files'], { encoding: 'utf8' })
     .split(/\r?\n/)
     .filter(Boolean);
-  const forbiddenTrackedFiles = trackedFiles.filter((file) => file !== '.env.example' && /(^|\/)\.env(?:\.|$)/i.test(file));
+  const allowedEnvironmentTemplates = new Set(['.env.example', '.env.demo.example', '.env.production.example', '.env.test.example']);
+  const forbiddenTrackedFiles = trackedFiles.filter((file) => !allowedEnvironmentTemplates.has(file) && /(^|\/)\.env(?:\.|$)/i.test(file));
   for (const file of forbiddenTrackedFiles) fail(`environment file is tracked: ${file}`);
 
   const secretPatterns = [
@@ -41,7 +42,7 @@ try {
   ];
   for (const relativeFile of trackedFiles) {
     if (!/\.(?:js|jsx|ts|tsx|mjs|json|md|yml|yaml|env|sql)$/i.test(relativeFile)) continue;
-    if (relativeFile === '.env.example') continue;
+    if (allowedEnvironmentTemplates.has(relativeFile)) continue;
     const content = readFileSync(path.join(root, relativeFile), 'utf8');
     if (secretPatterns.some((pattern) => pattern.test(content))) fail(`secret-like value found in tracked file: ${relativeFile}`);
   }

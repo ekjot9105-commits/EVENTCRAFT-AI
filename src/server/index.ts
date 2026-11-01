@@ -17,6 +17,9 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { deploymentGuard } from './middleware/deploymentGuard.js';
 import { resolveIdentity } from './middleware/auth.js';
 import { requestContext } from './middleware/requestContext.js';
+import { validateDeploymentConfig } from './config.js';
+
+validateDeploymentConfig();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
