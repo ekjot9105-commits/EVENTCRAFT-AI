@@ -114,6 +114,8 @@ export default function EventDetail() {
               key={t.id}
               to={t.id === 'overview' ? `/events/${id}` : `/events/${id}/${t.id}`}
               role="tab"
+              id={`event-tab-${t.id}`}
+              aria-controls="event-tabpanel"
               aria-selected={activeTab === t.id}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                 activeTab === t.id
@@ -129,7 +131,13 @@ export default function EventDetail() {
       </nav>
 
       {/* Tab Content */}
-      <section aria-label={`${TABS.find((t) => t.id === activeTab)?.label || 'Overview'} section`}>
+      <section
+        id="event-tabpanel"
+        role="tabpanel"
+        tabIndex={0}
+        aria-labelledby={`event-tab-${activeTab}`}
+        aria-label={`${TABS.find((t) => t.id === activeTab)?.label || 'Overview'} section`}
+      >
         <OverviewTab event={event} />
       </section>
     </div>

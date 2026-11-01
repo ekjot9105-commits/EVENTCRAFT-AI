@@ -68,6 +68,7 @@ export default function CreateEvent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const cancelTriggerRef = useRef<HTMLButtonElement>(null);
   const cancelCloseRef = useRef<HTMLButtonElement>(null);
+  const cancelDialogRef = useRef<HTMLElement>(null);
   const hadCancelDialogOpen = useRef(false);
   const step = getStep(searchParams.get('step'));
 
@@ -78,6 +79,40 @@ export default function CreateEvent() {
     } else if (hadCancelDialogOpen.current) {
       cancelTriggerRef.current?.focus();
     }
+  }, [isCancelDialogOpen]);
+
+  useEffect(() => {
+    if (!isCancelDialogOpen) return;
+
+    const dialog = cancelDialogRef.current;
+    if (!dialog) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsCancelDialogOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )).filter((element) => !element.hasAttribute('disabled'));
+      if (focusable.length === 0) return;
+
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    dialog.addEventListener('keydown', handleKeyDown);
+    return () => dialog.removeEventListener('keydown', handleKeyDown);
   }, [isCancelDialogOpen]);
 
   useEffect(() => {
@@ -226,7 +261,7 @@ export default function CreateEvent() {
         <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => {
           if (event.target === event.currentTarget) setIsCancelDialogOpen(false);
         }}>
-          <section className="dialog-card" role="dialog" aria-modal="true" aria-labelledby="cancel-title">
+          <section ref={cancelDialogRef} className="dialog-card" role="dialog" aria-modal="true" aria-labelledby="cancel-title">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="eyebrow">Leave setup?</p>
