@@ -33,7 +33,9 @@ The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATE
 - `npm run type-check`: passed with zero errors.
 - `npm run lint`: passed with zero errors and zero warnings.
 - `npm test`: 31 test files, 259 tests passed.
-- `npm run test:coverage`: passed; 83.59% statements, 70.23% branches, 81.69% functions, and 85.59% lines.
+- `npm run test:coverage`: passed; 83.28% statements, 69.59% branches, 81.36% functions, and 85.34% lines.
+- `npm run test:e2e`: passed; six browser journeys cover the wizard, all three event types, planning workspaces, and mobile accessibility.
+- `npm audit`: passed with zero reported vulnerabilities.
 - `npm run build`: passed; emitted the split client SPA (377.73 kB entry JavaScript, 55.91 kB CSS) and compiled server.
 - `npm run verify`: passes type-check, lint, tests, coverage, build, production audit, and diff checks.
 
@@ -66,17 +68,15 @@ The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATE
 | `npm test` | 31 files, 259 tests passed |
 | `npm run lint` | Passed (0 errors, 0 warnings) |
 | `npm run build` | Passed; client and server artifacts emitted |
-| `npm run test:coverage` | Passed; 100% on prompts, schemas, budget calculations, rate limiting, and ownership middleware |
+| `npm run test:coverage` | Passed; 83.28% statements, 69.59% branches, 81.36% functions, and 85.34% lines overall; focused prompt/schema/budget/rate-limit/ownership suites are covered |
 | `npm run verify` | Passed all local quality gates |
 
-The browser suite covers landing, wizard progression, birthday creation, landing accessibility, and wizard accessibility. The SQLite API smoke test provides credential-free persistence evidence; hosted Supabase behavior remains external.
+The browser suite covers landing, wizard progression, birthday creation, all three event types across the planning workspaces, landing accessibility, wizard accessibility, and a mobile axe sweep of all primary routes. The SQLite API smoke test provides credential-free persistence evidence; hosted Supabase behavior remains external.
 
 ### Not executed
 
 - Live Supabase persistence tests.
 - Live Gemini generation or timeout tests; local-model integration requires an installed Ollama or LM Studio service.
-- Full browser journeys for wedding, community, and every planning workspace.
-- Real-browser axe scans for every route and mobile viewport.
 - Authenticated multi-user or RLS tests.
 - Deployed-environment verification; no accessible deployment target was provided.
 
@@ -96,10 +96,7 @@ The browser suite covers landing, wizard progression, birthday creation, landing
 
 ### Remaining evidence gaps
 
-- Component-level axe-core scans are configured; real-browser axe scanning remains a future phase.
-- No complete keyboard-only browser workflow.
-- Dialog focus restoration and mobile overflow were not fully exercised in a real browser suite.
-- Contrast was reviewed from existing design tokens but not measured with an automated analyzer.
+- Live hosted authentication/RLS verification and a full keyboard-only workflow against a deployed environment.
 
 ## 7. Submission status
 
@@ -118,13 +115,11 @@ The browser suite covers landing, wizard progression, birthday creation, landing
 
 - Supabase-backed create/edit/refresh persistence.
 - Live hosted-model plan generation and context-aware responses.
-- Full browser journey across all planning workspaces and all three event types.
-- Real-browser accessibility coverage for every route and mobile viewport.
 - Rich event-specific templates, quote comparison, standalone idea regeneration, and non-budget Copilot mutations.
 
 ### Deployment status
 
-No live deployment was tested. The repository is ready for a configured demo environment, but production API access must remain disabled until authentication, event ownership, and RLS are implemented.
+No live deployment was tested. The repository includes separate controlled-demo and authenticated-production environment templates; production API access still requires the deployment operator to configure authentication and apply/verify RLS.
 
 ### Required environment variables
 

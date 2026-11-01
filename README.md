@@ -145,7 +145,7 @@ EventCraft AI maintains strict engineering standards:
 - **Zero Lint Warnings:** Verified with ESLint 10.
 - **Strict TypeScript:** Strict null checks, no unchecked index access, explicit boundary typing.
 - **100% Test Pass Rate:** 259 tests across 31 test files, including unit, component, API, persistence, AI, and security coverage.
-- **Measured coverage:** 83.11% statements, 68.96% branches, 81.4% functions, and 85.2% lines.
+- **Measured coverage:** 83.28% statements, 69.59% branches, 81.36% functions, and 85.34% lines.
 - **Anonymous Tenant Isolation:** Cookie and header session management (`ec_anon_id`) ensures zero multi-user collision in public demo environments.
 - **Accessible Visualizations:** Screen-reader accessible data tables and keyboard rotation support for 3D canvas charts.
 

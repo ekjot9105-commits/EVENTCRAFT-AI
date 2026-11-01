@@ -31,7 +31,7 @@ npm run test:coverage passed (100% on prompts, schemas, budget calculations, rat
 npm run verify       all local gates passed
 ```
 
-The browser smoke check reached the five-step event wizard and confirmed all three event-type choices. Multi-tenant isolation was verified using end-to-end integration tests proving IDOR resistance across different session owners (`securityTenantIsolation.test.ts`), and AI endpoint burst limits were validated (`aiRateLimit.test.ts`).
+The browser suite reaches the five-step event wizard, confirms all three event-type choices, and exercises the budget, timeline, vendors, ideas, and assistant routes for wedding, birthday, and community events. Multi-tenant isolation was verified using end-to-end integration tests proving IDOR resistance across different session owners (`securityTenantIsolation.test.ts`), and AI endpoint burst limits were validated (`aiRateLimit.test.ts`).
 
 ## Tenancy and Security Boundary
 

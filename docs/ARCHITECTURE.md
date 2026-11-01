@@ -124,13 +124,13 @@ Client errors should retain field details for forms, show a retryable message fo
 
 Existing positives include a skip link, semantic `main/header/nav`, associated `Input` labels, `aria-invalid`/`aria-describedby`, visible `:focus-visible` styling, reduced-motion CSS, and a native dialog component with focus restoration. Gaps include:
 
-- Component-level axe checks and real-browser axe/keyboard checks exist for the landing page and event wizard; complete route and mobile coverage remains hardening work.
+- Component-level axe checks and real-browser axe/keyboard checks cover the landing page, event wizard, and all primary event/planning routes at a mobile viewport.
 - Event type buttons use radio semantics without a complete roving/fieldset radio-group interaction model.
-- The modal does not explicitly identify `role="dialog"`/`aria-modal` and has no robust focus trap fallback.
-- Tabs use links with `role="tab"` but do not expose a complete tabpanel relationship.
+- The native modal and custom cancel dialog expose dialog semantics, restore focus, and trap keyboard focus.
+- Event navigation tabs expose a linked `tabpanel` relationship.
 - Loading and fetch status are not announced.
 - Error text may expose raw backend messages.
-- Contrast and mobile layouts need measured verification.
+- Contrast and mobile layouts are verified by the primary-route axe sweep at 390×844.
 
 ## 9. Testing strategy
 
