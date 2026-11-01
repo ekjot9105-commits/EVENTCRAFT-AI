@@ -10,7 +10,7 @@ The repository is a TypeScript modular monolith:
 - **AI:** Server-only `@google/genai` adapter with event-specific prompts, Zod output validation, bounded requests, and explicit copilot proposals.
 - **Quality:** Vitest 5, JSDOM, React Testing Library, axe-core component checks, ESLint 10, and a CI quality workflow.
 
-The existing modular monolith is suitable. The current verified baseline is recorded in [BASELINE.md](./BASELINE.md) and the non-regression scorecard is recorded in [MASTER_SCORECARD.md](./MASTER_SCORECARD.md). Playwright is configured for the landing/wizard lifecycle; full hosted rate limiting and complete route coverage remain hardening work.
+The existing modular monolith is suitable. The current verified baseline is recorded in [BASELINE.md](./BASELINE.md) and the non-regression scorecard is recorded in [MASTER_SCORECARD.md](./MASTER_SCORECARD.md). Playwright covers the primary planning lifecycle and mobile accessibility; list responses are capped at 100 newest records to protect payload and render costs.
 
 ## 2. Actual repository structure
 

@@ -178,7 +178,7 @@ export function sqliteGetEvent(id: string, ownerId?: string): Event | null {
   return row ? eventRow(row) : null;
 }
 export function sqliteListEvents(ownerId = 'demo-local-owner'): Event[] {
-  return (prepare('SELECT * FROM events WHERE owner_id = ? ORDER BY created_at DESC').all(ownerId) as SqliteRow[]).map(eventRow);
+  return (prepare('SELECT * FROM events WHERE owner_id = ? ORDER BY created_at DESC LIMIT 100').all(ownerId) as SqliteRow[]).map(eventRow);
 }
 export function sqliteUpdateEvent(id: string, data: UpdateEventPayload, ownerId?: string): Event | null {
   const current = sqliteGetEvent(id, ownerId);
@@ -216,7 +216,7 @@ export function sqliteGet<T>(table: PlanningTable, eventId: string, id: string):
   return row ? planningRow<T>(table, row) : null;
 }
 export function sqliteList<T>(table: PlanningTable, eventId: string): T[] {
-  const rows = prepare(`SELECT * FROM ${table} WHERE event_id = ? ORDER BY created_at`).all(eventId) as SqliteRow[];
+  const rows = prepare(`SELECT * FROM ${table} WHERE event_id = ? ORDER BY created_at LIMIT 100`).all(eventId) as SqliteRow[];
   return rows.map((row) => planningRow<T>(table, row));
 }
 export function sqliteInsert<T>(table: PlanningTable, eventId: string, data: Record<string, unknown>): T {
@@ -255,7 +255,7 @@ const planRow = (row: SqliteRow): StoredPlanRow => ({
 });
 
 export function sqliteListPlans(eventId: string): StoredPlanRow[] {
-  return (prepare('SELECT * FROM ai_plans WHERE event_id = ? ORDER BY generated_at DESC').all(eventId) as SqliteRow[]).map(planRow);
+  return (prepare('SELECT * FROM ai_plans WHERE event_id = ? ORDER BY generated_at DESC LIMIT 100').all(eventId) as SqliteRow[]).map(planRow);
 }
 
 /** Primary-key lookup instead of listing (and JSON-parsing) every plan version. */
@@ -269,7 +269,7 @@ export function sqliteMarkPlanApplied(eventId: string, planId: string): void {
 }
 
 export function sqliteListIdeas(eventId: string): Idea[] {
-  return prepare('SELECT * FROM ideas WHERE event_id = ? ORDER BY created_at DESC').all(eventId) as unknown as Idea[];
+  return prepare('SELECT * FROM ideas WHERE event_id = ? ORDER BY created_at DESC LIMIT 100').all(eventId) as unknown as Idea[];
 }
 export function sqliteCreateIdea(eventId: string, data: CreateIdeaPayload): Idea {
   const idea: Idea = { id: randomUUID(), event_id: eventId, category: data.category, title: data.title, description: data.description ?? null, estimated_cost: data.estimated_cost ?? null, status: 'new' as IdeaStatus, created_at: now() };

@@ -7,13 +7,14 @@ import type { TimelineItem, CreateTimelineItemPayload, UpdateTimelineItemPayload
 import type { Vendor, CreateVendorPayload, UpdateVendorPayload } from '../../shared/types/vendor.js';
 
 type TableName = 'budget_items' | 'timeline_items' | 'vendors';
+const MAX_PLANNING_LIST_ITEMS = 100;
 
 /** Provides typed persistence operations for event planning workspaces. */
 export class PlanningService {
   // Shared list logic keeps ordering and event scoping consistent across tables.
   private async list<T>(table: TableName, eventId: string): Promise<T[]> {
     if (usesSqlite()) return sqliteList<T>(table, eventId);
-    const { data, error } = await getSupabase().from(table).select('*').eq('event_id', eventId).order('created_at');
+    const { data, error } = await getSupabase().from(table).select('*').eq('event_id', eventId).order('created_at').limit(MAX_PLANNING_LIST_ITEMS);
     if (error) throw new Error(`Failed to list ${table}: ${error.message}`);
     return (data ?? []) as T[];
   }

@@ -3,11 +3,13 @@ import { usesSqlite } from '../db/client.js';
 import { sqliteCreateIdea, sqliteListIdeas, sqliteTransaction, sqliteUpdateIdea } from '../db/sqlite.js';
 import type { CreateIdeaPayload, Idea, UpdateIdeaPayload } from '../../shared/types/idea.js';
 
+const MAX_IDEA_LIST_ITEMS = 100;
+
 /** Provides event-scoped persistence for generated and user-saved ideas. */
 export class IdeaService {
   async list(eventId: string): Promise<Idea[]> {
     if (usesSqlite()) return sqliteListIdeas(eventId);
-    const { data, error } = await getSupabase().from('ideas').select('*').eq('event_id', eventId).order('created_at', { ascending: false });
+    const { data, error } = await getSupabase().from('ideas').select('*').eq('event_id', eventId).order('created_at', { ascending: false }).limit(MAX_IDEA_LIST_ITEMS);
     if (error) throw new Error(`Failed to list ideas: ${error.message}`);
     return (data ?? []) as Idea[];
   }

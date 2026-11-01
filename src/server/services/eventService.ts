@@ -7,6 +7,9 @@ import { usesSqlite } from '../db/client.js';
 import { sqliteCreateEvent, sqliteDeleteEvent, sqliteGetEvent, sqliteListEvents, sqliteUpdateEvent } from '../db/sqlite.js';
 import type { Event, CreateEventPayload, UpdateEventPayload } from '../../shared/types/event.js';
 
+/** Prevents an unbounded dashboard response as a user's event history grows. */
+export const MAX_EVENT_LIST_ITEMS = 100;
+
 export class EventService {
   /**
    * Create a new event.
@@ -69,7 +72,8 @@ export class EventService {
       .from('events')
       .select('*')
       .eq('owner_id', ownerId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(MAX_EVENT_LIST_ITEMS);
 
     if (error) {
       throw new Error(`Failed to list events: ${error.message}`);
