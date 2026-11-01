@@ -32,8 +32,8 @@ The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATE
 
 - `npm run type-check`: passed with zero errors.
 - `npm run lint`: passed with zero errors and zero warnings.
-- `npm test`: 31 test files, 259 tests passed.
-- `npm run test:coverage`: passed; 83.28% statements, 69.59% branches, 81.36% functions, and 85.34% lines.
+- `npm test`: 31 test files, 260 tests passed.
+- `npm run test:coverage`: passed; 83.32% statements, 69.87% branches, 81.38% functions, and 85.39% lines.
 - `npm run test:e2e`: passed; six browser journeys cover the wizard, all three event types, planning workspaces, and mobile accessibility.
 - `npm audit`: passed with zero reported vulnerabilities.
 - `npm run build`: passed; emitted the split client SPA (377.73 kB entry JavaScript, 55.91 kB CSS) and compiled server.
@@ -65,10 +65,10 @@ The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATE
 | Command | Result |
 |---|---|
 | `npm run type-check` | Passed (0 errors) |
-| `npm test` | 31 files, 259 tests passed |
+| `npm test` | 31 files, 260 tests passed |
 | `npm run lint` | Passed (0 errors, 0 warnings) |
 | `npm run build` | Passed; client and server artifacts emitted |
-| `npm run test:coverage` | Passed; 83.28% statements, 69.59% branches, 81.36% functions, and 85.34% lines overall; focused prompt/schema/budget/rate-limit/ownership suites are covered |
+| `npm run test:coverage` | Passed; 83.32% statements, 69.87% branches, 81.38% functions, and 85.39% lines overall; focused prompt/schema/budget/rate-limit/ownership suites are covered |
 | `npm run verify` | Passed all local quality gates |
 
 The browser suite covers landing, wizard progression, birthday creation, all three event types across the planning workspaces, landing accessibility, wizard accessibility, and a mobile axe sweep of all primary routes. The SQLite API smoke test provides credential-free persistence evidence; hosted Supabase behavior remains external.
@@ -107,7 +107,7 @@ The browser suite covers landing, wizard progression, birthday creation, all thr
 - Production server starts successfully.
 - Direct nested production routes serve the SPA.
 - The current repository supports an explicit anonymous demo and strict authenticated mode; anonymous demo mode must remain restricted to controlled evaluation deployments.
-- 259 deterministic tests pass.
+- 260 deterministic tests pass.
 - All three event types are present in the wizard.
 - Core AI, planning, persistence, and proposal-confirmation boundaries are implemented and documented.
 
