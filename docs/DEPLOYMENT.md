@@ -50,6 +50,13 @@ EventCraft AI is designed as a unified full-stack TypeScript application:
 2. Click **New +** → **Web Service**.
 3. Connect your GitHub repository: `https://github.com/ekjot9105-commits/EVENTCRAFT-AI.git`.
 
+The repository includes [`render.yaml`](../render.yaml), which defines the
+build command, start command, health check, and credential-free demo
+environment. When creating the service from the Render Blueprint, select this
+file so the service does not start with an ambiguous production identity mode.
+If the service was created manually, copy the same environment values into
+Render's Environment tab.
+
 ### 2. Configure Build & Runtime Settings
 Fill in the configuration fields:
 
@@ -75,7 +82,7 @@ Configure the following variables in the **Environment** tab:
 | `NODE_ENV` | `production` | Enables Express static asset serving of the React SPA |
 | `NODE_VERSION` | `24.0.0` | Ensures native Node 24 runtime support |
 | `DATABASE_PROVIDER` | `sqlite` or `supabase` | `sqlite` for zero-setup demo; `supabase` for hosted PostgreSQL |
-| `SQLITE_PATH` | `data/eventcraft.sqlite` | Filepath for local SQLite database (when provider is sqlite) |
+| `SQLITE_PATH` | `data/eventcraft.sqlite` | Filepath for local SQLite database (when provider is sqlite); Vercel automatically uses writable `/tmp` for relative paths |
 | `AI_PROVIDER` | `gemini` or `local` | `gemini` for live GenAI; `local` for deterministic demo |
 | `GEMINI_API_KEY` | `your-gemini-api-key` | Google AI Studio API key |
 | `GEMINI_MODEL` | `gemini-2.5-flash` | Selected Gemini model |

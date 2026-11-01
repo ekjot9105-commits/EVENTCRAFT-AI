@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: eventcraft-ai
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run server:start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 24.0.0
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_PROVIDER
+        value: sqlite
+      - key: SQLITE_PATH
+        value: data/eventcraft.sqlite
+      - key: AI_PROVIDER
+        value: local
+      - key: DEMO_MODE
+        value: "true"
+      - key: AUTH_ENABLED
+        value: "false"
+      - key: DEMO_ALLOW_CLIENT_SESSION_ID
+        value: "false"
+      - key: DISABLE_PRODUCTION_API
+        value: "false"
+      - key: TRUST_PROXY
+        value: "true"

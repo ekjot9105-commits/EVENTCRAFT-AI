@@ -9,7 +9,22 @@ import type { IdeaStatus } from '../../shared/constants/statusEnums.js';
 type SqliteRow = Record<string, unknown>;
 
 const defaultDatabasePath = process.env['VERCEL'] ? '/tmp/eventcraft.sqlite' : 'data/eventcraft.sqlite';
-const databasePath = resolve(process.env['SQLITE_PATH'] || defaultDatabasePath);
+
+/**
+ * Vercel functions can write only to /tmp. A relative SQLITE_PATH from a
+ * shared .env file resolves inside the read-only deployment bundle, so keep
+ * serverless SQLite on the writable ephemeral volume instead of failing on
+ * the first database request.
+ */
+function resolveDatabasePath(): string {
+  if (!process.env['VERCEL']) return resolve(process.env['SQLITE_PATH'] || defaultDatabasePath);
+
+  const configuredPath = process.env['SQLITE_PATH'];
+  if (configuredPath?.startsWith('/tmp/')) return resolve(configuredPath);
+  return defaultDatabasePath;
+}
+
+const databasePath = resolveDatabasePath();
 let database: DatabaseSync | null = null;
 
 /** Provides the local, file-backed database used when Supabase is not configured. */
