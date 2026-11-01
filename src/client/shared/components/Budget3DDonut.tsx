@@ -221,7 +221,6 @@ export default function Budget3DDonut({
 
   return (
     <figure
-      role="region"
       aria-label="3D Interactive Budget Breakdown"
       className={`relative flex flex-col items-center select-none ${className}`}
     >
