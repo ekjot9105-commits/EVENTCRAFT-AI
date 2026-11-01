@@ -2,15 +2,15 @@
 
 ## 1. Audit summary and stack
 
-The repository is a TypeScript modular-monolith starter:
+The repository is a TypeScript modular monolith:
 
-- **Client:** React 18, React Router 6, Vite 8, Tailwind CSS 4 configuration, browser `fetch` API.
+- **Client:** React 18, React Router 7, Vite 8, Tailwind CSS 3, browser `fetch` API.
 - **Server:** Node.js ESM, Express 5, `cors`, `helmet`, `dotenv`, and Zod validation.
-- **Persistence:** Supabase PostgreSQL through `@supabase/supabase-js`; one SQL migration currently exists.
+- **Persistence:** native Node SQLite for the credential-free demo and Supabase PostgreSQL for hosted persistence; five SQL migrations are tracked.
 - **AI:** Server-only `@google/genai` adapter with event-specific prompts, Zod output validation, bounded requests, and explicit copilot proposals.
-- **Quality:** Vitest 5, JSDOM, React Testing Library dependencies, ESLint 10. No Playwright configuration or CI workflow exists.
+- **Quality:** Vitest 5, JSDOM, React Testing Library, axe-core component checks, ESLint 10, and a CI quality workflow.
 
-No stack migration is recommended for Phase 0. The existing modular monolith is suitable; the priority is completing its missing vertical slices and correcting configuration drift.
+The existing modular monolith is suitable. The current verified baseline is recorded in [BASELINE.md](./BASELINE.md). Playwright browser testing and shared hosted rate limiting remain future phases.
 
 ## 2. Actual repository structure
 
@@ -88,18 +88,16 @@ AI output is never executable and never trusted merely because it parsed as JSON
 
 ## 5. Persistence model
 
-The migration defines `events`, `budget_items`, `timeline_items`, `vendors`, `ideas`, and `assistant_messages`, with foreign keys and indexes. It currently has no `users`/`user_id`, row-level security policy, or authentication integration. Before multi-user deployment, add an auth/ownership design and enable RLS; until then the API should be treated as a local/demo deployment.
+The migration set defines events, budgets, timelines, vendors, ideas, AI plans, and staged proposals with foreign keys and indexes. SQLite additionally maintains event ownership for demo-session isolation. Before multi-user hosted deployment, use authenticated Supabase identities and reviewed RLS policies.
 
 Use database constraints for enum-like statuses and non-negative monetary/date invariants where practical. Keep totals as deterministic application calculations; do not ask the model to calculate authoritative totals.
 
 ## 6. Security boundaries and known gaps
 
-Current protections include JSON body size limit, Helmet, Zod body validation, server-side environment loading, no client-side AI call, and a production deny-by-default guard unless `AUTH_ENABLED=true`. Current gaps:
+Current protections include JSON body size limits, Helmet, Zod validation, server-only credentials, event ownership middleware, no client-side AI call, prompt sanitization, validated AI output, and expiring single-use proposals. Current follow-up gaps:
 
-- `cors()` is unrestricted.
-- The service-role key is preferred when present, while no authentication or ownership checks exist.
-- The migration has no RLS or ownership column; `AUTH_ENABLED` must remain false until those are added.
-- Event IDs are not validated as UUIDs at the route boundary.
+- Authentication is currently designed around explicit demo sessions; strict Bearer-token enforcement is a follow-up phase.
+- The in-memory AI limiter is suitable for a single instance but should use a shared store for horizontally scaled deployments.
 - `metadata: z.record(z.unknown())` is broad and needs feature-specific schemas before AI or persistence use.
 - Development disables Helmet CSP; production CSP policy is not explicitly reviewed.
 - AI routes have a small in-memory per-IP rate limit and a 30-second provider timeout; production deployments should use a shared rate limiter.
@@ -126,7 +124,7 @@ Client errors should retain field details for forms, show a retryable message fo
 
 Existing positives include a skip link, semantic `main/header/nav`, associated `Input` labels, `aria-invalid`/`aria-describedby`, visible `:focus-visible` styling, reduced-motion CSS, and a native dialog component with focus restoration. Gaps include:
 
-- No automated axe/keyboard testing.
+- Component-level axe checks exist; real-browser axe and keyboard workflows remain future work.
 - Event type buttons use radio semantics without a complete roving/fieldset radio-group interaction model.
 - The modal does not explicitly identify `role="dialog"`/`aria-modal` and has no robust focus trap fallback.
 - Tabs use links with `role="tab"` but do not expose a complete tabpanel relationship.
@@ -146,7 +144,7 @@ Keep the existing Vitest/RTL direction. Add:
 | E2E | Create each event type, generate/edit/persist each planning area, assistant approval flow |
 | Accessibility | axe scans plus keyboard-only workflows at mobile and desktop widths |
 
-Do not claim coverage percentages until a coverage command is run and its artifact is reviewed.
+Coverage percentages in the current report come from `npm run test:coverage`; the captured values are maintained in [BASELINE.md](./BASELINE.md).
 
 ## 10. Deployment boundaries
 

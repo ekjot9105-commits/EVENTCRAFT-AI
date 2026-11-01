@@ -79,7 +79,7 @@ Configure the following variables in the **Environment** tab:
 | `AI_PROVIDER` | `gemini` or `local` | `gemini` for live GenAI; `local` for deterministic demo |
 | `GEMINI_API_KEY` | `your-gemini-api-key` | Google AI Studio API key |
 | `GEMINI_MODEL` | `gemini-2.5-flash` | Selected Gemini model |
-| `AUTH_ENABLED` | `false` | `false` for portfolio/evaluator demo; `true` for Supabase JWT auth |
+| `AUTH_ENABLED` | `false` | Keep false for the current anonymous demo; strict Bearer-token enforcement is a follow-up phase |
 
 #### If Using Supabase (Hosted PostgreSQL):
 | Variable | Value |
@@ -94,10 +94,11 @@ Configure the following variables in the **Environment** tab:
 
 If using Supabase as the production database, apply the SQL migrations located in `src/server/db/migrations/` sequentially using the Supabase SQL Editor:
 
-1. [`001_initial_schema.sql`](file:///c:/Users/Ekjot%20singh/Desktop/EVENTCRAFT%20AI/src/server/db/migrations/001_initial_schema.sql) — Core events, budget items, timeline items, and vendors tables.
-2. [`002_phase2_event_fields.sql`](file:///c:/Users/Ekjot%20singh/Desktop/EVENTCRAFT%20AI/src/server/db/migrations/002_phase2_event_fields.sql) — Extended event properties and ideas table.
-3. [`003_event_ownership.sql`](file:///c:/Users/Ekjot%20singh/Desktop/EVENTCRAFT%20AI/src/server/db/migrations/003_event_ownership.sql) — Tenant isolation and owner_id foreign keys.
-4. [`004_ai_plans.sql`](file:///c:/Users/Ekjot%20singh/Desktop/EVENTCRAFT%20AI/src/server/db/migrations/004_ai_plans.sql) — AI plan version snapshots and history tracking.
+1. [`001_initial_schema.sql`](../src/server/db/migrations/001_initial_schema.sql) — Core events, budget items, timeline items, and vendors tables.
+2. [`002_phase2_event_fields.sql`](../src/server/db/migrations/002_phase2_event_fields.sql) — Extended event properties and ideas table.
+3. [`003_event_ownership.sql`](../src/server/db/migrations/003_event_ownership.sql) — Tenant isolation and owner ID fields.
+4. [`004_ai_plans.sql`](../src/server/db/migrations/004_ai_plans.sql) — AI plan version snapshots and history tracking.
+5. [`005_supported_currencies.sql`](../src/server/db/migrations/005_supported_currencies.sql) — Supported currency alignment for hosted persistence.
 
 ---
 

@@ -24,11 +24,11 @@ The deterministic quality gate passed across all automated test suites and compi
 
 ```text
 npm run type-check   passed (0 errors)
-npm test             17 files / 108 tests passed in ~4.2s
+npm test             29 files / 244 tests passed
 npm run lint         passed (0 errors, 0 warnings)
 npm run build        passed (client and compiled server)
 npm run test:coverage passed (100% on prompts, schemas, budget calculations, rate limit, ownership)
-npm run verify       all 4 gates passed
+npm run verify       all local gates passed
 ```
 
 The browser smoke check reached the five-step event wizard and confirmed all three event-type choices. Multi-tenant isolation was verified using end-to-end integration tests proving IDOR resistance across different session owners (`securityTenantIsolation.test.ts`), and AI endpoint burst limits were validated (`aiRateLimit.test.ts`).

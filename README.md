@@ -5,7 +5,7 @@
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
 [![Express](https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge&logo=express)](https://expressjs.com/)
 [![Gemini](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash-4285F4?style=for-the-badge&logo=google)](https://aistudio.google.com/)
-[![Tests](https://img.shields.io/badge/Tests-75%20Passed-success?style=for-the-badge&logo=vitest)](https://vitest.dev/)
+[![Tests](https://img.shields.io/badge/Tests-244%20Passed-success?style=for-the-badge&logo=vitest)](https://vitest.dev/)
 
 > **GenAI-powered event planning assistant** for weddings, birthdays, anniversaries, and community gatherings. Features schema-backed budgets, an interactive 3D Timeline Highway, vendor coordination, a creative ideas studio, and a stage-and-confirm AI Copilot.
 
@@ -128,11 +128,11 @@ For complete deployment instructions, environment setup, and Supabase database m
 | `npm run dev:server` | Runs server with hot reload (`tsx watch`) |
 | `npm run build` | Compiles client and server for production |
 | `npm run server:start` | Runs the compiled production Express server |
-| `npm test` | Runs the Vitest test suite (59 unit tests) |
+| `npm test` | Runs 244 deterministic Vitest tests across 29 test files |
 | `npm run test:coverage` | Generates code coverage report |
 | `npm run lint` | Runs ESLint across client, server, and test code |
 | `npm run type-check` | Runs TypeScript compiler type checks (`tsc --noEmit`) |
-| `npm run verify` | Full verification pipeline (Typecheck + Lint + Tests + Build) |
+| `npm run verify` | Full verification pipeline (type-check, lint, tests, coverage, build, audit, and diff check) |
 
 ---
 
@@ -141,7 +141,8 @@ For complete deployment instructions, environment setup, and Supabase database m
 EventCraft AI maintains strict engineering standards:
 - **Zero Lint Warnings:** Verified with ESLint 10.
 - **Strict TypeScript:** Strict null checks, no unchecked index access, explicit boundary typing.
-- **100% Test Pass Rate:** 75 tests across 12 test suites (59 unit tests + 16 full Express HTTP integration tests).
+- **100% Test Pass Rate:** 244 tests across 29 test files, including unit, component, API, persistence, AI, and security coverage.
+- **Measured coverage:** 83% statements, 68.6% branches, 81.28% functions, and 85.1% lines.
 - **Anonymous Tenant Isolation:** Cookie and header session management (`ec_anon_id`) ensures zero multi-user collision in public demo environments.
 - **Accessible Visualizations:** Screen-reader accessible data tables and keyboard rotation support for 3D canvas charts.
 

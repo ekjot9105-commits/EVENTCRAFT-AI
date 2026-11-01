@@ -5,7 +5,10 @@ const commands = [
   ['npm', ['run', 'type-check']],
   ['npm', ['run', 'lint']],
   ['npm', ['test']],
+  ['npm', ['run', 'test:coverage']],
   ['npm', ['run', 'build']],
+  ['npm', ['audit', '--omit=dev', '--audit-level=moderate']],
+  ['git', ['diff', '--check']],
 ];
 
 for (const [command, args] of commands) {

@@ -1,6 +1,6 @@
 # Final Submission Report
 
-Date: 2026-10-30
+Date: 2026-11-01
 
 ## 1. Problem statement alignment
 
@@ -32,9 +32,10 @@ The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATE
 
 - `npm run type-check`: passed with zero errors.
 - `npm run lint`: passed with zero errors and zero warnings.
-- `npm test`: 17 test files, 108 tests passed in ~4.2s.
-- `npm run build`: passed; emitted client SPA (374 kB JS, 55 kB CSS) and compiled server.
-- `npm run verify`: all four quality gates passed.
+- `npm test`: 29 test files, 244 tests passed.
+- `npm run test:coverage`: passed; 83% statements, 68.6% branches, 81.28% functions, and 85.1% lines.
+- `npm run build`: passed; emitted the client SPA (625.40 kB minified JS, 55.91 kB CSS) and compiled server.
+- `npm run verify`: passes type-check, lint, tests, coverage, build, production audit, and diff checks.
 
 ## 3. Security
 
@@ -62,11 +63,11 @@ The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATE
 | Command | Result |
 |---|---|
 | `npm run type-check` | Passed (0 errors) |
-| `npm test` | 17 files, 108 tests passed in 4.2s |
+| `npm test` | 29 files, 244 tests passed |
 | `npm run lint` | Passed (0 errors, 0 warnings) |
 | `npm run build` | Passed; client and server artifacts emitted |
 | `npm run test:coverage` | Passed; 100% on prompts, schemas, budget calculations, rate limiting, and ownership middleware |
-| `npm run verify` | Passed all 4 quality gates |
+| `npm run verify` | Passed all local quality gates |
 
 The browser smoke check opened the app, reached `/events/new`, and confirmed accessible Wedding, Birthday, and Community Event choices. The SQLite API smoke test provided credential-free persistence evidence; hosted Supabase behavior remains external.
 
@@ -75,7 +76,7 @@ The browser smoke check opened the app, reached `/events/new`, and confirmed acc
 - Live Supabase persistence tests.
 - Live Gemini generation or timeout tests; local-model integration requires an installed Ollama or LM Studio service.
 - Playwright end-to-end suite; no Playwright project is configured.
-- Automated axe accessibility scan; no axe integration is configured.
+- Real-browser axe accessibility scan; component-level axe checks are configured.
 - Authenticated multi-user or RLS tests.
 - Deployed-environment verification; no accessible deployment target was provided.
 
@@ -95,7 +96,7 @@ The browser smoke check opened the app, reached `/events/new`, and confirmed acc
 
 ### Remaining evidence gaps
 
-- No automated axe scan.
+- Component-level axe-core scans are configured; real-browser axe scanning remains a future phase.
 - No complete keyboard-only browser workflow.
 - Dialog focus restoration and mobile overflow were not fully exercised in a real browser suite.
 - Contrast was reviewed from existing design tokens but not measured with an automated analyzer.
@@ -104,12 +105,12 @@ The browser smoke check opened the app, reached `/events/new`, and confirmed acc
 
 ### Fully verified
 
-- Repository is clean and the final changes are committed and pushed.
+- Baseline commit `87969ad` is pulled from `origin/main`; Phase 0/1 documentation changes must be committed and pushed by the project owner after review.
 - Client and production server builds succeed.
 - Production server starts successfully.
 - Direct nested production routes serve the SPA.
-- Production API is deny-by-default without authentication.
-- 59 deterministic tests pass.
+- The current deployment is an explicit anonymous demo; strict authenticated production mode remains a follow-up phase.
+- 244 deterministic tests pass.
 - All three event types are present in the wizard.
 - Core AI, planning, persistence, and proposal-confirmation boundaries are implemented and documented.
 
@@ -118,7 +119,7 @@ The browser smoke check opened the app, reached `/events/new`, and confirmed acc
 - Supabase-backed create/edit/refresh persistence.
 - Live hosted-model plan generation and context-aware responses.
 - Full browser journey across all planning workspaces.
-- Automated accessibility and Playwright coverage.
+- Real-browser accessibility and Playwright coverage.
 - Rich event-specific templates, quote comparison, standalone idea regeneration, and non-budget Copilot mutations.
 
 ### Deployment status

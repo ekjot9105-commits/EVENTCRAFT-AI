@@ -9,6 +9,7 @@
 | `npm run type-check` | Runs strict TypeScript checking |
 | `npm run lint` | Runs ESLint over source and tests |
 | `npm run build` | Runs the production TypeScript/Vite build |
+| `npm run verify` | Runs type-check, lint, tests, coverage, build, production audit, and diff checks |
 
 ## Test categories
 
@@ -19,15 +20,17 @@
 - **SQLite persistence smoke test:** With `DATABASE_PROVIDER=sqlite`, the API can be exercised locally without Supabase; the adapter creates its schema and persists events and planning records in `SQLITE_PATH`.
 - **Integration limitations:** Supabase persistence and hosted Gemini requests are not required for the normal suite. Keyless local AI can be verified with Ollama or LM Studio when a local model service is installed.
 
+The current baseline is 29 test files and 244 passing tests. Coverage is 83% statements, 68.6% branches, 81.28% functions, and 85.1% lines. See [BASELINE.md](./BASELINE.md) for the captured results.
+
 ## Mocking policy
 
 The AI provider is injected through `setAiProviderForTests`; tests do not call Gemini or spend quota. Browser tests stub `fetch` at the transport boundary for shell and wizard workflows. These tests intentionally do not claim live database or provider coverage.
 
-## Known gaps
+## Known warnings and future coverage
 
-- No Playwright end-to-end project is configured yet.
-- No automated axe scan is configured.
-- No authenticated multi-user integration test exists because authentication/ownership is not implemented.
+- Playwright browser lifecycle tests are not configured yet.
+- Component-level axe checks exist; real-browser axe and keyboard workflows remain future work.
+- Authenticated multi-user integration tests require a configured Supabase environment; local event ownership is covered.
 - Supabase service tests should use a repository mock or disposable test project before release.
 - SQLite uses Node 24's experimental built-in `node:sqlite`; pin Node 24+ for the credential-free demo path.
-- Coverage is reported only when `@vitest/coverage-v8` is installed and the command completes; percentages must be taken from the generated report, not estimated.
+- Coverage is reported by the locked `@vitest/coverage-v8` dependency and enforced by the Vitest thresholds.
