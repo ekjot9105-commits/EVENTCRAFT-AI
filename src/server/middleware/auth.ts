@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
 import { getSupabase, usesSqlite } from '../db/client.js';
-import { isAuthEnabled, isDemoMode } from '../config.js';
+import { isAuthEnabled, isClientSessionHeaderAllowed, isDemoMode } from '../config.js';
 
 export const DEMO_OWNER_ID = 'demo-local-owner';
 const ANON_COOKIE_NAME = 'ec_anon_id';
@@ -83,7 +83,7 @@ export async function resolveIdentity(req: Request, res: Response, next: NextFun
 
     // Resolve anonymous visitor session ID from header or cookie
     const cookieAnonId = parseCookie(req.headers.cookie, ANON_COOKIE_NAME);
-    const headerAnonId = req.header('x-anon-id');
+    const headerAnonId = isClientSessionHeaderAllowed() ? req.header('x-anon-id') : undefined;
     // Once the server-issued HttpOnly cookie exists, it is authoritative. This
     // prevents a conflicting client header from switching the active tenant.
     const existingAnonId = [cookieAnonId, headerAnonId].find(isValidAnonId);

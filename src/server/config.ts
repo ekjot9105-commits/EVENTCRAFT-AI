@@ -19,6 +19,11 @@ export function isProductionModeConfigured(): boolean {
   return !isProduction() || isAuthEnabled() !== isDemoMode();
 }
 
+/** Client-selected anonymous IDs are allowed only for local test/dev adapters. */
+export function isClientSessionHeaderAllowed(): boolean {
+  return !isProduction() || process.env['DEMO_ALLOW_CLIENT_SESSION_ID'] === 'true';
+}
+
 /** Fail fast on ambiguous or unsafe production configuration. */
 export function validateDeploymentConfig(env: NodeJS.ProcessEnv = process.env): void {
   if (env['NODE_ENV'] !== 'production') return;
@@ -36,5 +41,7 @@ export function validateDeploymentConfig(env: NodeJS.ProcessEnv = process.env): 
     if (!env['SUPABASE_URL'] || (!env['SUPABASE_SERVICE_ROLE_KEY'] && !env['SUPABASE_ANON_KEY'])) {
       throw new Error('AUTH_ENABLED=true requires SUPABASE_URL and a Supabase key.');
     }
+  } else if (env['DEMO_ALLOW_CLIENT_SESSION_ID'] === 'true') {
+    throw new Error('Production demo mode must use the server-issued anonymous cookie.');
   }
 }

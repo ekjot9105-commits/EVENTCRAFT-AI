@@ -6,6 +6,17 @@ import { z } from 'zod';
 import { EVENT_TYPES } from '../constants/eventTypes.js';
 import { SUPPORTED_CURRENCIES } from '../constants/currencies.js';
 
+const eventMetadataValueSchema = z.union([
+  z.string().max(2000),
+  z.number().finite(),
+  z.boolean(),
+  z.array(z.string().max(500)).max(50),
+]);
+
+/** Bounds user-provided event context without pretending it is executable data. */
+export const eventMetadataSchema = z.record(z.string().max(100), eventMetadataValueSchema)
+  .refine((metadata) => Object.keys(metadata).length <= 50, 'Metadata cannot contain more than 50 fields');
+
 export const createEventSchema = z.object({
   type: z.enum(EVENT_TYPES),
   title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or fewer'),
@@ -15,7 +26,7 @@ export const createEventSchema = z.object({
   location: z.string().max(500).optional(),
   budget_amount: z.number().finite().min(0).max(100_000_000).optional(),
   currency: z.enum(SUPPORTED_CURRENCIES).optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+  metadata: eventMetadataSchema.optional(),
 });
 
 export const updateEventSchema = z.object({
@@ -26,7 +37,7 @@ export const updateEventSchema = z.object({
   location: z.string().max(500).optional().nullable(),
   budget_amount: z.number().finite().min(0).max(100_000_000).optional(),
   currency: z.enum(SUPPORTED_CURRENCIES).optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+  metadata: eventMetadataSchema.optional(),
 });
 
 export type CreateEventInput = z.infer<typeof createEventSchema>;

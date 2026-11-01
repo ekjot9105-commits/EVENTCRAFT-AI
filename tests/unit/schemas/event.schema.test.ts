@@ -104,6 +104,12 @@ describe('createEventSchema', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it('bounds event metadata values and field count', () => {
+    expect(createEventSchema.safeParse({ type: 'community', title: 'Block party', metadata: { theme: 'boho', colors: ['gold', 'emerald'] } }).success).toBe(true);
+    expect(createEventSchema.safeParse({ type: 'community', title: 'Block party', metadata: { nested: { unsafe: true } } }).success).toBe(false);
+    expect(createEventSchema.safeParse({ type: 'community', title: 'Block party', metadata: Object.fromEntries(Array.from({ length: 51 }, (_, index) => [`field-${index}`, 'value'])) }).success).toBe(false);
+  });
 });
 
 describe('updateEventSchema', () => {

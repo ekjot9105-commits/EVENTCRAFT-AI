@@ -1,16 +1,18 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { isAuthEnabled, isDemoMode, isProductionModeConfigured, validateDeploymentConfig } from '../../src/server/config';
+import { isAuthEnabled, isClientSessionHeaderAllowed, isDemoMode, isProductionModeConfigured, validateDeploymentConfig } from '../../src/server/config';
 
 const original = {
   auth: process.env['AUTH_ENABLED'],
   demo: process.env['DEMO_MODE'],
   node: process.env['NODE_ENV'],
+  clientSession: process.env['DEMO_ALLOW_CLIENT_SESSION_ID'],
 };
 
 afterEach(() => {
   process.env['AUTH_ENABLED'] = original.auth;
   process.env['DEMO_MODE'] = original.demo;
   process.env['NODE_ENV'] = original.node;
+  process.env['DEMO_ALLOW_CLIENT_SESSION_ID'] = original.clientSession;
 });
 
 describe('deployment mode configuration', () => {
@@ -51,5 +53,11 @@ describe('deployment mode configuration', () => {
   it('requires Supabase credentials for authenticated production', () => {
     expect(() => validateDeploymentConfig({ NODE_ENV: 'production', AUTH_ENABLED: 'true', DEMO_MODE: 'false', DATABASE_PROVIDER: 'supabase' })).toThrow(/SUPABASE_URL/i);
     expect(() => validateDeploymentConfig({ NODE_ENV: 'production', AUTH_ENABLED: 'true', DEMO_MODE: 'false', DATABASE_PROVIDER: 'supabase', SUPABASE_URL: 'https://example.supabase.co', SUPABASE_ANON_KEY: 'placeholder' })).not.toThrow();
+  });
+
+  it('does not trust client-selected anonymous IDs in production', () => {
+    process.env['NODE_ENV'] = 'production';
+    process.env['DEMO_ALLOW_CLIENT_SESSION_ID'] = 'false';
+    expect(isClientSessionHeaderAllowed()).toBe(false);
   });
 });

@@ -22,7 +22,7 @@ if (!existsSync(envExample)) {
   fail('.env.example is missing');
 } else {
   const envText = readFileSync(envExample, 'utf8');
-  for (const variable of ['DATABASE_PROVIDER', 'AI_PROVIDER', 'NODE_ENV', 'DEMO_MODE', 'AUTH_ENABLED']) {
+  for (const variable of ['DATABASE_PROVIDER', 'AI_PROVIDER', 'NODE_ENV', 'DEMO_MODE', 'AUTH_ENABLED', 'DEMO_ALLOW_CLIENT_SESSION_ID']) {
     if (!new RegExp(`^${variable}=`, 'm').test(envText)) fail(`.env.example is missing ${variable}`);
   }
 }
