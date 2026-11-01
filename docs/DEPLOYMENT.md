@@ -79,7 +79,10 @@ Configure the following variables in the **Environment** tab:
 | `AI_PROVIDER` | `gemini` or `local` | `gemini` for live GenAI; `local` for deterministic demo |
 | `GEMINI_API_KEY` | `your-gemini-api-key` | Google AI Studio API key |
 | `GEMINI_MODEL` | `gemini-2.5-flash` | Selected Gemini model |
-| `AUTH_ENABLED` | `false` | Keep false for the current anonymous demo; strict Bearer-token enforcement is a follow-up phase |
+| `DEMO_MODE` | `true` | Explicitly permits anonymous evaluator/portfolio sessions |
+| `AUTH_ENABLED` | `false` | Select strict Supabase JWT mode; Phase 3 enforces Bearer tokens |
+| `DISABLE_PRODUCTION_API` | `false` | Set true to make all API requests unavailable |
+| `TRUST_PROXY` | `false` | Set true behind one trusted reverse-proxy hop |
 
 #### If Using Supabase (Hosted PostgreSQL):
 | Variable | Value |
