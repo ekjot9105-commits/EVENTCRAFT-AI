@@ -22,6 +22,8 @@
 
 The Phase 0 baseline is 29 test files and 244 passing tests. The current suite is 31 test files and 254 passing tests. Current coverage is 83.96% statements, 70.12% branches, 81.61% functions, and 86.03% lines. Browser lifecycle coverage is available through `npm run test:e2e`; axe accessibility and keyboard checks are available through `npm run test:a11y`.
 
+GitHub Actions reproduces the same checks from a clean Node 22 install. It copies `.env.example` for credential-free SQLite/demo operation, runs `npm run verify`, installs Chromium, and runs the Playwright lifecycle and accessibility suite on every push to `main` and every pull request.
+
 ## Mocking policy
 
 The AI provider is injected through `setAiProviderForTests`; tests do not call Gemini or spend quota. Browser tests stub `fetch` at the transport boundary for shell and wizard workflows. These tests intentionally do not claim live database or provider coverage.
