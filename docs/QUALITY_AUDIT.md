@@ -21,7 +21,7 @@ The audit reviewed the Phase 1–4 React/Express/Supabase modular monolith, shar
 - **Code quality:** Strict TypeScript, shared Zod schemas, typed API client, separate AI provider/prompts/service, deterministic budget calculations, and event-scoped services are present. Some feature components remain dense and should be split before a final release.
 - **Security:** Secrets remain server-side, bodies are bounded, UUIDs and schemas are validated, AI output is parsed, and proposals are now server-issued. Missing authentication/ownership/RLS is the primary unresolved risk.
 - **Efficiency:** AI calls are explicit, bounded, and rate-limited; budget arithmetic is local and deterministic. No private response cache exists. List endpoints still need pagination for public-scale deployment.
-- **Testing:** 244 deterministic tests pass with enforced coverage thresholds. Live Supabase/hosted-model and browser E2E tests remain optional; keyless local-model verification requires Ollama or LM Studio to be installed.
+- **Testing:** 252 deterministic tests pass with enforced coverage thresholds. Live Supabase/hosted-model and browser E2E tests remain optional; keyless local-model verification requires Ollama or LM Studio to be installed.
 - **Accessibility:** Semantic landmarks, labels, focus styles, live AI status, button names, retry/error text, and component-level axe checks are present. Real-browser axe and full keyboard E2E evidence remain future work.
 
 ## Dependency audit
@@ -32,7 +32,7 @@ React Router was upgraded to 7.18.5, which resolves both moderate advisories (GH
 
 | Area | Change |
 |---|---|
-| Testing | Per-worker SQLite files remove the `database is locked` failure under `--coverage`; 244 tests cover provider adapters and fallbacks, security middleware, the proposal applier, the API client, shared components, and routed pages; coverage thresholds are enforced in CI. |
+| Testing | Per-worker SQLite files remove the `database is locked` failure under `--coverage`; 252 tests cover provider adapters and fallbacks, security middleware, the proposal applier, the API client, shared components, and routed pages; coverage thresholds are enforced in CI. |
 | Accessibility | Component-level axe-core checks cover shared components and routed pages; skipped heading levels, broken skip links, duplicate modal IDs, toast roles, navigation states, AI canvas labeling, and reduced-motion behavior were addressed. Real-browser accessibility testing remains a future phase. |
 | Security | AI rate limit is now per session *and* per IP (rotating `x-anon-id` no longer bypasses it), memory-bounded, and sends `Retry-After`; session IDs and request IDs are format-validated; session cookie is `Secure` in production; `trust proxy` on Vercel; inline boot script moved to a CSP-compatible file. |
 | Code quality | `provider.ts` split into per-adapter modules with one JSON parser and one provider resolver; Copilot confirmation rewritten as a table-driven applier that applies the same schema, stale-value, and schedule rules to every action; expected failures in the AI service return 4xx/502 instead of 500. |
