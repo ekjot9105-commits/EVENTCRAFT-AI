@@ -29,6 +29,7 @@ describe('request', () => {
     await eventsApi.list();
 
     expect(localStorage.getItem('eventcraft_anon_id')).toBe('anon-session-123');
+    expect(fetchMock.mock.calls[0]![1].credentials).toBe('include');
     expect(fetchMock.mock.calls[1]![1].headers).toMatchObject({ 'x-anon-id': 'anon-session-123', 'Content-Type': 'application/json' });
   });
 

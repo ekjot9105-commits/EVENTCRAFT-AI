@@ -69,6 +69,9 @@ async function request<T>(
   // Spread options first so caller headers extend, rather than replace, the defaults.
   const res = await fetch(apiUrl(endpoint), {
     ...options,
+    // Preserve the server-issued anonymous identity when a preview frontend
+    // talks to a separately hosted API origin.
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...(anonId ? { 'x-anon-id': anonId } : {}),
