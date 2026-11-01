@@ -20,7 +20,7 @@
 - **SQLite persistence smoke test:** With `DATABASE_PROVIDER=sqlite`, the API can be exercised locally without Supabase; the adapter creates its schema and persists events and planning records in `SQLITE_PATH`.
 - **Integration limitations:** Supabase persistence and hosted Gemini requests are not required for the normal suite. Keyless local AI can be verified with Ollama or LM Studio when a local model service is installed.
 
-The Phase 0 baseline is 29 test files and 244 passing tests. The current suite is 31 test files and 254 passing tests. Current coverage is 83.56% statements, 70.06% branches, 81.61% functions, and 85.57% lines. Browser lifecycle coverage is available through `npm run test:e2e`; axe accessibility and keyboard checks are available through `npm run test:a11y`.
+The Phase 0 baseline is 29 test files and 244 passing tests. The current suite is 31 test files and 254 passing tests. Current coverage is 83.96% statements, 70.12% branches, 81.61% functions, and 86.03% lines. Browser lifecycle coverage is available through `npm run test:e2e`; axe accessibility and keyboard checks are available through `npm run test:a11y`.
 
 ## Mocking policy
 
