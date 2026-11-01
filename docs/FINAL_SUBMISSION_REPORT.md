@@ -32,7 +32,7 @@ The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATE
 
 - `npm run type-check`: passed with zero errors.
 - `npm run lint`: passed with zero errors and zero warnings.
-- `npm test`: 30 test files, 252 tests passed.
+- `npm test`: 31 test files, 254 tests passed.
 - `npm run test:coverage`: passed; 83.11% statements, 68.96% branches, 81.4% functions, and 85.2% lines.
 - `npm run build`: passed; emitted the client SPA (625.40 kB minified JS, 55.91 kB CSS) and compiled server.
 - `npm run verify`: passes type-check, lint, tests, coverage, build, production audit, and diff checks.
@@ -63,7 +63,7 @@ The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATE
 | Command | Result |
 |---|---|
 | `npm run type-check` | Passed (0 errors) |
-| `npm test` | 30 files, 252 tests passed |
+| `npm test` | 31 files, 254 tests passed |
 | `npm run lint` | Passed (0 errors, 0 warnings) |
 | `npm run build` | Passed; client and server artifacts emitted |
 | `npm run test:coverage` | Passed; 100% on prompts, schemas, budget calculations, rate limiting, and ownership middleware |
@@ -110,7 +110,7 @@ The browser smoke check opened the app, reached `/events/new`, and confirmed acc
 - Production server starts successfully.
 - Direct nested production routes serve the SPA.
 - The current deployment is an explicit anonymous demo; strict authenticated production mode remains a follow-up phase.
-- 252 deterministic tests pass.
+- 254 deterministic tests pass.
 - All three event types are present in the wizard.
 - Core AI, planning, persistence, and proposal-confirmation boundaries are implemented and documented.
 
