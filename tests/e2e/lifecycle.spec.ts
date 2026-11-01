@@ -98,9 +98,18 @@ test.describe('event planning lifecycle', () => {
 
       await page.goto(`/events/${event.id}/ideas`);
       await expect(page.getByRole('heading', { name: /personalized ideas/i })).toBeVisible();
+      await page.getByRole('button', { name: /generate ideas with ai/i }).click();
+      await expect(page.getByRole('button', { name: /save idea/i }).first()).toBeVisible({ timeout: 20_000 });
+      await page.getByRole('button', { name: /add to budget/i }).first().click();
+      await page.getByRole('button', { name: /add to timeline/i }).first().click();
+      await page.getByRole('button', { name: /save idea/i }).first().click();
 
       await page.goto(`/events/${event.id}/assistant`);
       await expect(page.getByRole('heading', { name: new RegExp(`${event.title}.*AI Copilot`, 'i') })).toBeVisible();
+      await page.getByRole('button', { name: /generate plan/i }).click();
+      await expect(page.getByText('Preview only')).toBeVisible({ timeout: 20_000 });
+      await page.getByRole('button', { name: /apply this plan/i }).click();
+      await expect(page.getByText('Applied')).toBeVisible({ timeout: 20_000 });
 
       const persisted = await page.request.get(`/api/events/${event.id}/budget`);
       expect((await persisted.json()).some((item: { name: string }) => item.name === `${type} venue updated`)).toBe(false);

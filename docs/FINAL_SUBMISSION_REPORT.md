@@ -78,7 +78,7 @@ The browser suite covers landing, wizard progression, birthday creation, all thr
 - Live Supabase persistence tests.
 - Live Gemini generation or timeout tests; local-model integration requires an installed Ollama or LM Studio service.
 - Authenticated multi-user or RLS tests.
-- Deployed-environment verification; no accessible deployment target was provided.
+- Live Gemini provider verification; the deterministic local provider is covered.
 
 ## 6. Accessibility
 
@@ -110,12 +110,13 @@ The browser suite covers landing, wizard progression, birthday creation, all thr
 - 260 deterministic tests pass.
 - All three event types are present in the wizard.
 - Core AI, planning, persistence, and proposal-confirmation boundaries are implemented and documented.
+- Deployed Vercel smoke test passed for health, event creation/deletion, planning workspaces, AI status, and stored plan routes.
 
 ### Partially implemented or externally unverified
 
 - Supabase-backed create/edit/refresh persistence.
 - Live hosted-model plan generation and context-aware responses.
-- Rich event-specific templates, quote comparison, standalone idea regeneration, and non-budget Copilot mutations.
+- Live Gemini and authenticated Supabase behavior.
 
 ### Deployment status
 
