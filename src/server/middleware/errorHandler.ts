@@ -40,11 +40,9 @@ export function errorHandler(
   res: Response,
   _next: NextFunction,
 ): void {
-  // Log the full error server-side (never expose to client)
-  console.error(`[ERROR] ${err.name}: ${err.message}`);
-  if (!(err instanceof AppError)) {
-    console.error(err.stack);
-  }
+  // Keep logs useful without copying provider responses, credentials, or SQL
+  // details into deployment logs. The request ID remains the correlation key.
+  console.error(`[ERROR] request=${req.requestId ?? 'unknown'} type=${err.name}`);
 
   if (err instanceof AppError) {
     res.status(err.statusCode).json({

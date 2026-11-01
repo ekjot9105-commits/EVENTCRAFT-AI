@@ -82,9 +82,11 @@ export async function resolveIdentity(req: Request, res: Response, next: NextFun
     }
 
     // Resolve anonymous visitor session ID from header or cookie
-    const headerAnonId = req.header('x-anon-id');
     const cookieAnonId = parseCookie(req.headers.cookie, ANON_COOKIE_NAME);
-    const existingAnonId = [headerAnonId, cookieAnonId].find(isValidAnonId);
+    const headerAnonId = req.header('x-anon-id');
+    // Once the server-issued HttpOnly cookie exists, it is authoritative. This
+    // prevents a conflicting client header from switching the active tenant.
+    const existingAnonId = [cookieAnonId, headerAnonId].find(isValidAnonId);
 
     if (existingAnonId) {
       req.ownerId = existingAnonId;

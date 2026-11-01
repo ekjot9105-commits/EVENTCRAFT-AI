@@ -118,6 +118,11 @@ describe('resolveIdentity', () => {
     expect(req.ownerId).toBe('cookie-session-42');
   });
 
+  it('treats the server-issued cookie as authoritative over a conflicting header', async () => {
+    const { req } = await identify({ 'x-anon-id': 'header-session-42', cookie: 'ec_anon_id=cookie-session-42' });
+    expect(req.ownerId).toBe('cookie-session-42');
+  });
+
   it('issues a fresh HttpOnly session for malformed cookies instead of failing', async () => {
     const { req, res, next } = await identify({ cookie: 'ec_anon_id=%E0%A4%A' });
     expect(req.ownerId).toMatch(/^anon-/);
