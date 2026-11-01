@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
 import { getSupabase, usesSqlite } from '../db/client.js';
+import { isAuthEnabled, isDemoMode } from '../config.js';
 
 export const DEMO_OWNER_ID = 'demo-local-owner';
 const ANON_COOKIE_NAME = 'ec_anon_id';
@@ -40,26 +41,37 @@ function anonCookie(value: string): string {
 
 /**
  * Resolves an isolated session identity:
- * 1. Supabase JWT when AUTH_ENABLED=true and a Bearer token is provided.
- * 2. Anonymous per-visitor session (cookie / x-anon-id) to prevent multi-tenant collision.
+ * 1. Supabase JWT when AUTH_ENABLED=true; missing or invalid tokens are rejected.
+ * 2. Anonymous per-visitor session only when DEMO_MODE=true.
  * 3. Fallback to DEMO_OWNER_ID during automated testing.
  */
 export async function resolveIdentity(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // If Supabase authentication is enabled and a bearer token is present
-    if (process.env['AUTH_ENABLED'] === 'true') {
-      const header = req.header('authorization');
-      const token = header?.startsWith('Bearer ') ? header.slice(7) : null;
-      if (token && !usesSqlite()) {
-        const { data, error } = await getSupabase().auth.getUser(token);
-        if (error || !data.user) {
-          res.status(401).json({ error: 'Authentication is required.' });
-          return;
-        }
-        req.ownerId = data.user.id;
-        next();
+    // Authentication mode is strict: it never falls through to anonymous identity.
+    if (isAuthEnabled()) {
+      if (usesSqlite()) {
+        res.status(503).json({ error: 'Authentication is unavailable with SQLite. Configure Supabase or disable AUTH_ENABLED.' });
         return;
       }
+      const header = req.header('authorization');
+      const token = header?.startsWith('Bearer ') ? header.slice(7) : null;
+      if (!token) {
+        res.status(401).json({ error: 'Authentication is required.' });
+        return;
+      }
+      const { data, error } = await getSupabase().auth.getUser(token);
+      if (error || !data.user) {
+        res.status(401).json({ error: 'Authentication is required.' });
+        return;
+      }
+      req.ownerId = data.user.id;
+      next();
+      return;
+    }
+
+    if (!isDemoMode()) {
+      res.status(503).json({ error: 'No identity mode is configured. Set DEMO_MODE=true or AUTH_ENABLED=true.' });
+      return;
     }
 
     // In unit testing environments without explicit anon headers, keep the fixed test owner ID

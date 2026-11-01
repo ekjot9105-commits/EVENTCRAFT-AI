@@ -82,7 +82,14 @@ describe('aiRateLimit', () => {
 
 describe('resolveIdentity', () => {
   const previousEnv = process.env['NODE_ENV'];
-  afterEach(() => { process.env['NODE_ENV'] = previousEnv; });
+  const previousAuth = process.env['AUTH_ENABLED'];
+  const previousDemo = process.env['DEMO_MODE'];
+  afterEach(() => {
+    process.env['NODE_ENV'] = previousEnv;
+    process.env['AUTH_ENABLED'] = previousAuth;
+    process.env['DEMO_MODE'] = previousDemo;
+    delete process.env['DATABASE_PROVIDER'];
+  });
 
   async function identify(headers: Record<string, string>) {
     const req = mockRequest({ headers });
@@ -120,8 +127,36 @@ describe('resolveIdentity', () => {
 
   it('marks the session cookie Secure in production', async () => {
     process.env['NODE_ENV'] = 'production';
+    process.env['DEMO_MODE'] = 'true';
     const { res } = await identify({ cookie: 'unrelated=1' });
     expect(res.headers['set-cookie']).toContain('; Secure');
+  });
+
+  it('rejects missing Bearer tokens when authentication is enabled with a hosted database', async () => {
+    process.env['AUTH_ENABLED'] = 'true';
+    process.env['DEMO_MODE'] = 'false';
+    process.env['DATABASE_PROVIDER'] = 'supabase';
+    const { res, next } = await identify({});
+    expect(res.statusCode).toBe(401);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('rejects SQLite authentication configuration instead of bypassing auth', async () => {
+    process.env['AUTH_ENABLED'] = 'true';
+    process.env['DEMO_MODE'] = 'false';
+    process.env['DATABASE_PROVIDER'] = 'sqlite';
+    const { res, next } = await identify({ authorization: 'Bearer example-token' });
+    expect(res.statusCode).toBe(503);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('rejects an unconfigured identity mode', async () => {
+    process.env['AUTH_ENABLED'] = 'false';
+    process.env['DEMO_MODE'] = 'false';
+    process.env['NODE_ENV'] = 'development';
+    const { res, next } = await identify({});
+    expect(res.statusCode).toBe(503);
+    expect(next).not.toHaveBeenCalled();
   });
 
   it('refuses to continue when no owner was resolved', () => {

@@ -8,8 +8,10 @@ let supabase: SupabaseClient | null = null;
 
 /** Uses Supabase when configured and SQLite for the credential-free local demo. */
 export function usesSqlite(): boolean {
-  return process.env['DATABASE_PROVIDER'] === 'sqlite'
-    || (!process.env['SUPABASE_URL'] && !process.env['SUPABASE_SERVICE_ROLE_KEY'] && !process.env['SUPABASE_ANON_KEY']);
+  const configuredProvider = process.env['DATABASE_PROVIDER'];
+  if (configuredProvider === 'supabase') return false;
+  if (configuredProvider === 'sqlite') return true;
+  return !process.env['SUPABASE_URL'] && !process.env['SUPABASE_SERVICE_ROLE_KEY'] && !process.env['SUPABASE_ANON_KEY'];
 }
 
 /**
