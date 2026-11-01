@@ -5,6 +5,7 @@ const original = {
   auth: process.env['AUTH_ENABLED'],
   demo: process.env['DEMO_MODE'],
   node: process.env['NODE_ENV'],
+  vercel: process.env['VERCEL'],
   clientSession: process.env['DEMO_ALLOW_CLIENT_SESSION_ID'],
 };
 
@@ -12,6 +13,7 @@ afterEach(() => {
   process.env['AUTH_ENABLED'] = original.auth;
   process.env['DEMO_MODE'] = original.demo;
   process.env['NODE_ENV'] = original.node;
+  process.env['VERCEL'] = original.vercel;
   process.env['DEMO_ALLOW_CLIENT_SESSION_ID'] = original.clientSession;
 });
 
@@ -39,6 +41,16 @@ describe('deployment mode configuration', () => {
     process.env['DEMO_MODE'] = 'false';
     expect(isDemoMode()).toBe(false);
     expect(isProductionModeConfigured()).toBe(false);
+  });
+
+  it('supports legacy Vercel demo deployments without identity variables', () => {
+    process.env['NODE_ENV'] = 'production';
+    process.env['VERCEL'] = '1';
+    delete process.env['DEMO_MODE'];
+    delete process.env['AUTH_ENABLED'];
+    expect(isDemoMode()).toBe(true);
+    expect(isProductionModeConfigured()).toBe(true);
+    expect(() => validateDeploymentConfig({ NODE_ENV: 'production', VERCEL: '1' })).not.toThrow();
   });
 
   it('rejects ambiguous production identity modes', () => {
