@@ -129,6 +129,7 @@ For complete deployment instructions, environment setup, and Supabase database m
 | `npm run build` | Compiles client and server for production |
 | `npm run server:start` | Runs the compiled production Express server |
 | `npm test` | Runs 254 deterministic Vitest tests across 31 test files |
+| `npm run test:e2e` | Runs real-browser lifecycle tests with Playwright |
 | `npm run test:coverage` | Generates code coverage report |
 | `npm run lint` | Runs ESLint across client, server, and test code |
 | `npm run type-check` | Runs TypeScript compiler type checks (`tsc --noEmit`) |
