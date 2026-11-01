@@ -33,8 +33,8 @@ The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATE
 - `npm run type-check`: passed with zero errors.
 - `npm run lint`: passed with zero errors and zero warnings.
 - `npm test`: 31 test files, 254 tests passed.
-- `npm run test:coverage`: passed; 83.11% statements, 68.96% branches, 81.4% functions, and 85.2% lines.
-- `npm run build`: passed; emitted the client SPA (625.40 kB minified JS, 55.91 kB CSS) and compiled server.
+- `npm run test:coverage`: passed; 83.56% statements, 70.06% branches, 81.61% functions, and 85.57% lines.
+- `npm run build`: passed; emitted the split client SPA (377.73 kB entry JavaScript, 55.91 kB CSS) and compiled server.
 - `npm run verify`: passes type-check, lint, tests, coverage, build, production audit, and diff checks.
 
 ## 3. Security
@@ -69,14 +69,14 @@ The complete requirement-by-requirement evidence is maintained in [PROBLEM_STATE
 | `npm run test:coverage` | Passed; 100% on prompts, schemas, budget calculations, rate limiting, and ownership middleware |
 | `npm run verify` | Passed all local quality gates |
 
-The browser smoke check opened the app, reached `/events/new`, and confirmed accessible Wedding, Birthday, and Community Event choices. The SQLite API smoke test provided credential-free persistence evidence; hosted Supabase behavior remains external.
+The browser suite covers landing, wizard progression, birthday creation, landing accessibility, and wizard accessibility. The SQLite API smoke test provides credential-free persistence evidence; hosted Supabase behavior remains external.
 
 ### Not executed
 
 - Live Supabase persistence tests.
 - Live Gemini generation or timeout tests; local-model integration requires an installed Ollama or LM Studio service.
-- Playwright end-to-end suite; no Playwright project is configured.
-- Real-browser axe accessibility scan; component-level axe checks are configured.
+- Full browser journeys for wedding, community, and every planning workspace.
+- Real-browser axe scans for every route and mobile viewport.
 - Authenticated multi-user or RLS tests.
 - Deployed-environment verification; no accessible deployment target was provided.
 
@@ -105,11 +105,11 @@ The browser smoke check opened the app, reached `/events/new`, and confirmed acc
 
 ### Fully verified
 
-- Baseline commit `87969ad` is pulled from `origin/main`; Phase 0/1 documentation changes must be committed and pushed by the project owner after review.
+- Master-plan baseline tag `master-baseline-2026-11-01` is recorded before hardening changes.
 - Client and production server builds succeed.
 - Production server starts successfully.
 - Direct nested production routes serve the SPA.
-- The current deployment is an explicit anonymous demo; strict authenticated production mode remains a follow-up phase.
+- The current repository supports an explicit anonymous demo and strict authenticated mode; anonymous demo mode must remain restricted to controlled evaluation deployments.
 - 254 deterministic tests pass.
 - All three event types are present in the wizard.
 - Core AI, planning, persistence, and proposal-confirmation boundaries are implemented and documented.
@@ -118,8 +118,8 @@ The browser smoke check opened the app, reached `/events/new`, and confirmed acc
 
 - Supabase-backed create/edit/refresh persistence.
 - Live hosted-model plan generation and context-aware responses.
-- Full browser journey across all planning workspaces.
-- Real-browser accessibility and Playwright coverage.
+- Full browser journey across all planning workspaces and all three event types.
+- Real-browser accessibility coverage for every route and mobile viewport.
 - Rich event-specific templates, quote comparison, standalone idea regeneration, and non-budget Copilot mutations.
 
 ### Deployment status
@@ -139,7 +139,7 @@ Copy `.env.example` to `.env` and configure:
 - Optional `GEMINI_MAX_OUTPUT_TOKENS`
 - `PORT`
 - `NODE_ENV`
-- Keep `AUTH_ENABLED=false` until the authentication boundary is complete.
+- Use `AUTH_ENABLED=true` with Supabase for shared production deployments; keep `AUTH_ENABLED=false` only for controlled demo mode.
 
 ### Final setup
 
